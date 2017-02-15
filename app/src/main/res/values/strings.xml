@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">ShimaneUniversityBrowser</string>
+    <string name="tv_thx_title">配当表</string>
+    <string name="tv_thx_desc">以下が選択されました。</string>
+    <string name="bt_thx_back">リストに戻る</string>
+    <string name="title_activity_page_view2">PageView2</string>
+</resources>
