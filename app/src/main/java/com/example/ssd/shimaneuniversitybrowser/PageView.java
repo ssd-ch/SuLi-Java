@@ -25,7 +25,7 @@ public class PageView extends AppCompatActivity{
         Intent intent = getIntent();
         String menuName = intent.getStringExtra("menuName");
         String menuUrl = intent.getStringExtra("menuUrl");
-/*
+
         TextView tvMenuName = (TextView)findViewById(R.id.tvMenuName);
         TextView tvMenuUrl = (TextView)findViewById(R.id.tvMenuUrl);
 
@@ -41,9 +41,8 @@ public class PageView extends AppCompatActivity{
         //ページの表示
         myWebView.loadUrl(menuUrl);
 
-        //jacascriptを許可する
+        //javascriptを許可する
         myWebView.getSettings().setJavaScriptEnabled(true);
-        */
     }
 
     public void onBackButtonClick(View view) {
