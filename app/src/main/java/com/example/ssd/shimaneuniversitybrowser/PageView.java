@@ -13,13 +13,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.util.Log;
 import android.annotation.SuppressLint;
 
-public class PageView extends AppCompatActivity implements ViewPager.OnPageChangeListener{
+public class PageView extends AppCompatActivity implements ViewPager.OnPageChangeListener {
 
     @SuppressLint("SetJavaScriptEnabled")
 
@@ -105,13 +107,24 @@ public class PageView extends AppCompatActivity implements ViewPager.OnPageChang
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View view = inflater.inflate(R.layout.pageview_content, container, false);
 
+            //ページ番号 1〜5
             int page = getArguments().getInt("page", 0);
 
+            //コンテキストからURL引き継ぎ
             Intent intent = parentActivity.getIntent();
             String Url = intent.getStringExtra("menuUrl");
 
             ((TextView) view.findViewById(R.id.page_text)).setText("Page " + page);
             ((TextView) view.findViewById(R.id.tvMenuUrl)).setText(Url);
+
+            TableLayout tablelayout = (TableLayout)view.findViewById(R.id.TableLayout);
+            for (int i=0; i<50; i++) {
+                // 行を追加
+                parentActivity.getLayoutInflater().inflate(R.layout.pageview_tablelow, tablelayout);
+                // 文字設定
+                TableRow tr = (TableRow)tablelayout.getChildAt(i);
+                ((TextView)(tr.getChildAt(0))).setText("場所"+(i+1));
+            }
 
         /*
             //レイアウトで指定したWebViewのIDを指定する。
