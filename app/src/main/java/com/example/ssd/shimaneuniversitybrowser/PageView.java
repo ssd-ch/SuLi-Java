@@ -1,6 +1,7 @@
 package com.example.ssd.shimaneuniversitybrowser;
 
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +14,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -20,6 +23,17 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.util.Log;
 import android.annotation.SuppressLint;
+import android.widget.Toast;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class PageView extends AppCompatActivity implements ViewPager.OnPageChangeListener {
 
@@ -105,26 +119,15 @@ public class PageView extends AppCompatActivity implements ViewPager.OnPageChang
         @Nullable
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+            //データを書き込むビューを取得
             View view = inflater.inflate(R.layout.pageview_content, container, false);
 
-            //ページ番号 1〜5
-            int page = getArguments().getInt("page", 0);
+            //コンストラクタの引数に表示させるパーツなどを指定
+            HTMLPageReceiver receiver = new HTMLPageReceiver(view);
 
-            //コンテキストからURL引き継ぎ
-            Intent intent = parentActivity.getIntent();
-            String Url = intent.getStringExtra("menuUrl");
-
-            ((TextView) view.findViewById(R.id.page_text)).setText("Page " + page);
-            ((TextView) view.findViewById(R.id.tvMenuUrl)).setText(Url);
-
-            TableLayout tablelayout = (TableLayout)view.findViewById(R.id.TableLayout);
-            for (int i=0; i<50; i++) {
-                // 行を追加
-                parentActivity.getLayoutInflater().inflate(R.layout.pageview_tablelow, tablelayout);
-                // 文字設定
-                TableRow tr = (TableRow)tablelayout.getChildAt(i);
-                ((TextView)(tr.getChildAt(0))).setText("場所"+(i+1));
-            }
+            //非同期処理を行う
+            receiver.execute("");
 
         /*
             //レイアウトで指定したWebViewのIDを指定する。
@@ -151,6 +154,62 @@ public class PageView extends AppCompatActivity implements ViewPager.OnPageChang
             @Override
             public void onClick(View view) {
                 parentActivity.finish();
+            }
+        }
+
+        private class HTMLPageReceiver extends AsyncTask<String, String, Elements> {
+
+            private View _view;
+
+            public HTMLPageReceiver(View view){
+                _view = view;
+            }
+
+            @Override
+            public Elements doInBackground(String... params) {
+
+                //コンテキストからURL引き継ぎ
+                Intent intent = parentActivity.getIntent();
+                String url = intent.getStringExtra("menuUrl"); //URL
+                String select = ".body tr"; //select tag
+                try {
+                    Document doc = Jsoup.connect(url).get();
+                    Elements data = doc.select(select);
+                    return data;
+                } catch (Exception e) {
+                    Toast.makeText(parentActivity, "取得失敗", Toast.LENGTH_LONG).show();
+                    return null;
+                }
+            }
+
+            public void onPostExecute(Elements result) {
+
+                int page = getArguments().getInt("page", 0);
+
+                //コンテキストからURL引き継ぎ
+                Intent intent = parentActivity.getIntent();
+                String url = intent.getStringExtra("menuUrl"); //URL
+
+                ((TextView) _view.findViewById(R.id.page_text)).setText("Page " + page);
+                ((TextView) _view.findViewById(R.id.tvMenuUrl)).setText(url);
+
+                TableLayout tablelayout = (TableLayout)_view.findViewById(R.id.TableLayout);
+
+                List<Map<String, String>> menuList = new ArrayList<Map<String, String>>();
+                int i = 0;
+                for(Element element : result){
+                    Map<String, String> menu = new HashMap<String, String>();
+                    menu.put("name", element.text().replace("教室配当表_",""));
+                    menu.put("url", element.attr("abs:href"));
+                    menuList.add(menu);
+
+                    // 行を追加
+                    parentActivity.getLayoutInflater().inflate(R.layout.pageview_tablelow, tablelayout);
+                    // 文字設定
+                    TableRow tr = (TableRow)tablelayout.getChildAt(i++);
+                    ((TextView)(tr.getChildAt(0))).setText(element.text());
+                }
+
             }
         }
     }
