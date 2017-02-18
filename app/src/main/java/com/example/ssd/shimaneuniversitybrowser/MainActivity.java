@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public Elements doInBackground(String... params) {
             String url = params[0]; //URL
-            String select = params[1]; //select
+            String select = params[1]; //select tag
             try {
                 Document doc = Jsoup.connect(url).get();
                 Elements data = doc.select(select);
@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
             List<Map<String, String>> menuList = new ArrayList<Map<String, String>>();
             for(Element element : result){
                 Map<String, String> menu = new HashMap<String, String>();
-                menu.put("name", element.text());
+                menu.put("name", element.text().replace("教室配当表_",""));
                 menu.put("url", element.attr("abs:href"));
                 menuList.add(menu);
             }
