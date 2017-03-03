@@ -190,20 +190,44 @@ public class PageView extends AppCompatActivity implements ViewPager.OnPageChang
                 Intent intent = parentActivity.getIntent();
                 String url = intent.getStringExtra("menuUrl"); //URL
 
-                ((TextView) _view.findViewById(R.id.page_text)).setText("Page " + page);
-                ((TextView) _view.findViewById(R.id.tvMenuUrl)).setText(url);
+                //((TextView) _view.findViewById(R.id.page_text)).setText("Page " + page);
+                //((TextView) _view.findViewById(R.id.tvMenuUrl)).setText(url);
+                ListView listview = (ListView) _view.findViewById(R.id.listView);
 
+                List<Map<String, String>> menuList = new ArrayList<Map<String, String>>();
+
+                String[] places = new String[result.get(2).select("td").size()-2];
+                int k = 0,l = 0;
+                for(int i=1;i<result.get(0).select("td").size();i++){
+                    Element td = result.get(0).select("td").get(i);
+                    for(int j=0;j< (td.attr("colspan").equals("") ? 1 : Integer.parseInt(td.attr("colspan")));j++){
+                        if(td.attr("rowspan").equals(""))
+                            places[l++] = td.text() +"_"+ result.get(1).select("td").get(k++).text();
+                        else places[l++] = td.text();
+                    }
+                }
+                int point = page * 5 + 2 ; //trタグの位置
+                for(int i = 0; i < 5 ; i++){ //1から5コマのループ
+                    Elements tdData = result.get(point + i).select("td");
+                    for(int pn=1;pn<places.length;pn++) { //場所のループ
+                        Map<String, String> menu = new HashMap<String, String>();
+                        menu.put("classname", tdData.get(i==0?pn+1:pn).text()); //一番最初は曜日名が入るので一つずらす
+                        menu.put("hour_place", (i*2+1) + "." + (i*2+2) + "限 " + places[pn-1]);
+                        menuList.add(menu);
+                    }
+                }
+
+                String[] from = {"classname","hour_place"};
+                int[] to = {android.R.id.text1, android.R.id.text2};
+                SimpleAdapter adapter = new SimpleAdapter( parentActivity, menuList, android.R.layout.simple_list_item_2, from, to);
+                listview.setAdapter(adapter);
+
+                //listview.setOnItemClickListener(new MainActivity.ListItemClickListener());
+/*
                 TableLayout tablelayout = (TableLayout)_view.findViewById(R.id.TableLayout);
 
                 List<Map<String, String>> menuList = new ArrayList<Map<String, String>>();
-                int point = page * 5 + 2 ; //trタグの位置
                 for(int i = 0; i < 5 ; i++) {
-                /*
-                Map<String, String> menu = new HashMap<String, String>();
-                menu.put("name", element.text().replace("教室配当表_",""));
-                menu.put("url", element.attr("abs:href"));
-                menuList.add(menu);
-                */
                     // 行を追加
                     parentActivity.getLayoutInflater().inflate(R.layout.pageview_tablelow, tablelayout);
                     TableRow tr = (TableRow) tablelayout.getChildAt(i);
@@ -213,6 +237,7 @@ public class PageView extends AppCompatActivity implements ViewPager.OnPageChang
                         ((TextView) (tr.getChildAt(j))).setText(tdData.get(j).text());
                     }
                 }
+*/
 
             }
         }
