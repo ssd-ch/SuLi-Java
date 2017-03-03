@@ -56,7 +56,7 @@ public class PageView extends AppCompatActivity implements ViewPager.OnPageChang
 
             @Override
             public Fragment getItem(int position) {
-                return PageFragment.newInstance(position + 1);
+                return PageFragment.newInstance(position);
             }
 
             @Override
@@ -196,18 +196,22 @@ public class PageView extends AppCompatActivity implements ViewPager.OnPageChang
                 TableLayout tablelayout = (TableLayout)_view.findViewById(R.id.TableLayout);
 
                 List<Map<String, String>> menuList = new ArrayList<Map<String, String>>();
-                int i = 0;
-                for(Element element : result){
-                    Map<String, String> menu = new HashMap<String, String>();
-                    menu.put("name", element.text().replace("教室配当表_",""));
-                    menu.put("url", element.attr("abs:href"));
-                    menuList.add(menu);
-
+                int point = page * 5 + 2 ; //trタグの位置
+                for(int i = 0; i < 5 ; i++) {
+                /*
+                Map<String, String> menu = new HashMap<String, String>();
+                menu.put("name", element.text().replace("教室配当表_",""));
+                menu.put("url", element.attr("abs:href"));
+                menuList.add(menu);
+                */
                     // 行を追加
                     parentActivity.getLayoutInflater().inflate(R.layout.pageview_tablelow, tablelayout);
+                    TableRow tr = (TableRow) tablelayout.getChildAt(i);
                     // 文字設定
-                    TableRow tr = (TableRow)tablelayout.getChildAt(i++);
-                    ((TextView)(tr.getChildAt(0))).setText(element.text());
+                    Elements tdData = result.get(point + i).select("td");
+                    for(int j = 0; j < 5; j++) {
+                        ((TextView) (tr.getChildAt(j))).setText(tdData.get(j).text());
+                    }
                 }
 
             }
