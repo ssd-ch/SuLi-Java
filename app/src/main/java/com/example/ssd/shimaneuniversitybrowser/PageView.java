@@ -1,6 +1,8 @@
 package com.example.ssd.shimaneuniversitybrowser;
 
 import android.app.Activity;
+import android.content.Context;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -15,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.BaseAdapter;
 import android.widget.SimpleAdapter;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -208,18 +211,28 @@ public class PageView extends AppCompatActivity implements ViewPager.OnPageChang
                 }
                 int point = page * 5 + 2 ; //trタグの位置
                 for(int i = 0; i < 5 ; i++){ //1から5コマのループ
+                    Map<String, String> time = new HashMap<String, String>();
+                    time.put("classname", "");
+                    time.put("hour_place", (i*2+1) + "." + (i*2+2) + "限 (" + (i+1) +"コマ)");
+                    time.put("text_color", "");
+                    menuList.add(time);
+
                     Elements tdData = result.get(point + i).select("td");
                     for(int pn=1;pn<places.length;pn++) { //場所のループ
                         Map<String, String> menu = new HashMap<String, String>();
-                        menu.put("classname", tdData.get(i==0?pn+1:pn).text()); //一番最初は曜日名が入るので一つずらす
-                        menu.put("hour_place", (i*2+1) + "." + (i*2+2) + "限 " + places[pn-1]);
+                        String text = tdData.get(i==0?pn+1:pn).text(); //一番最初は曜日名が入るので一つずらす
+                        if(text.equals(String.valueOf('\u00A0'))||text.equals("")) //"",&nbsp;
+                            text = "空き";
+                        menu.put("classname", text);
+                        menu.put("hour_place", places[pn-1].replaceAll("_"," "));
+                        menu.put("text_color", "");
                         menuList.add(menu);
                     }
                 }
 
-                String[] from = {"classname","hour_place"};
+                String[] from = {"hour_place","classname"};
                 int[] to = {android.R.id.text1, android.R.id.text2};
-                SimpleAdapter adapter = new SimpleAdapter( parentActivity, menuList, android.R.layout.simple_list_item_2, from, to);
+                SimpleAdapter adapter = new SimpleAdapterPlus( parentActivity, menuList, android.R.layout.simple_list_item_2, from, to);
                 listview.setAdapter(adapter);
 
                 //listview.setOnItemClickListener(new MainActivity.ListItemClickListener());
@@ -239,6 +252,53 @@ public class PageView extends AppCompatActivity implements ViewPager.OnPageChang
                 }
 */
 
+            }
+        }
+
+        private class SimpleAdapterPlus extends SimpleAdapter{
+            Context context;
+            LayoutInflater layoutInflater;
+            private List<? extends Map<String, ?>> mData;
+            String[] mfrom;
+
+            public SimpleAdapterPlus(Context context, List<? extends Map<String, ?>> data, int resource, String[] from, int[] to) {
+                super(context, data, resource, from, to);
+                this.context = context;
+                this.layoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                this.mData = data;
+                this.mfrom = from;
+            }
+
+            @Override
+            public String getItem(int position){
+                Map setData = mData.get(position);
+                return setData.get(mfrom[0]).toString();
+            }
+
+            @Override
+            public boolean isEnabled(int position) {
+                return !(getItem(position).toString().equals(""));
+            }
+
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+                //((TextView) view.findViewById(android.R.id.text1)).setTextColor(Color.BLUE);
+                //((TextView) view.findViewById(android.R.id.text2)).setText(""+ getItem(position));
+                if(position%(mData.size()/5)==0){
+                    view.setBackgroundColor(Color.rgb(0xfa,0xfa,0xd2));
+                }
+                else{
+                    view.setBackgroundColor(Color.rgb(0xff,0xff,0xff));
+                }
+
+                if (getItem(position).equals("time_header")) {
+                    View timeview = layoutInflater.inflate(R.layout.pageview_list_header, parent, false);
+                    timeview.setBackgroundColor(Color.rgb(0xfa,0xfa,0xd2));
+                    ((TextView) timeview.findViewById(R.id.head_text)).setText(getItem(position)+position);
+                    //return timeview;
+                }
+                return view;
             }
         }
     }

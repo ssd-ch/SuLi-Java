@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
         //コンストラクタの引数に表示させるパーツを指定
         PageListReceiver receiver = new PageListReceiver(tvView);
         //非同期処理を行う 引数はURLとセレクトタグ
-        receiver.execute("http://www.shimane-u.ac.jp/education/school_info/class_data/","#pageList a");
+        receiver.execute("http://www.shimane-u.ac.jp/education/school_info/class_data/class_data01.html",".body li a");
 
     }
 
@@ -79,14 +79,16 @@ public class MainActivity extends AppCompatActivity {
             List<Map<String, String>> menuList = new ArrayList<Map<String, String>>();
             for(Element element : result){
                 Map<String, String> menu = new HashMap<String, String>();
-                menu.put("name", element.text().replace("教室配当表_",""));
+                menu.put("name", element.text().replace("教室配当表_","").replaceAll("_"," "));
                 menu.put("url", element.attr("abs:href"));
                 menuList.add(menu);
             }
 
-            String[] from = {"name", "url"};
-            int[] to = {android.R.id.text1, android.R.id.text2};
-            SimpleAdapter adapter = new SimpleAdapter(MainActivity.this, menuList, android.R.layout.simple_list_item_2, from, to);
+            //String[] from = {"name", "url"};
+            //int[] to = {android.R.id.text1, android.R.id.text2};
+            String[] from = {"name"};
+            int[] to = {android.R.id.text1};
+            SimpleAdapter adapter = new SimpleAdapter(MainActivity.this, menuList, android.R.layout.simple_list_item_1, from, to);
             _tvView.setAdapter(adapter);
 
             _tvView.setOnItemClickListener(new ListItemClickListener());
