@@ -15,16 +15,9 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ListView;
-import android.widget.BaseAdapter;
 import android.widget.SimpleAdapter;
-import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import android.util.Log;
 import android.annotation.SuppressLint;
 import android.widget.Toast;
 
@@ -55,7 +48,7 @@ public class PageView extends AppCompatActivity implements ViewPager.OnPageChang
 
         FragmentPagerAdapter adapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
             //pagetitleに指定した文字をページ名として追加する
-            private String[] pagetitle = {"MON","TUE","WED","THU","FRI"};
+            private String[] pagetitle = {"月","火","水","木","金"};
 
             @Override
             public Fragment getItem(int position) {
@@ -197,9 +190,11 @@ public class PageView extends AppCompatActivity implements ViewPager.OnPageChang
                 //((TextView) _view.findViewById(R.id.tvMenuUrl)).setText(url);
                 ListView listview = (ListView) _view.findViewById(R.id.listView);
 
-                List<Map<String, String>> menuList = new ArrayList<Map<String, String>>();
+                List<SectionHeaderData> sectionList = new ArrayList<SectionHeaderData>();
+                List<List<SectionRowData>> rowList = new ArrayList<List<SectionRowData>>();
 
                 String[] places = new String[result.get(2).select("td").size()-2];
+                String[] times = {"8:30〜10:00","10:15〜11:45","12:45〜14:15","14:30〜16:00","16:15〜17:45"};
                 int k = 0,l = 0;
                 for(int i=1;i<result.get(0).select("td").size();i++){
                     Element td = result.get(0).select("td").get(i);
@@ -209,96 +204,84 @@ public class PageView extends AppCompatActivity implements ViewPager.OnPageChang
                         else places[l++] = td.text();
                     }
                 }
-                int point = page * 5 + 2 ; //trタグの位置
-                for(int i = 0; i < 5 ; i++){ //1から5コマのループ
-                    Map<String, String> time = new HashMap<String, String>();
-                    time.put("classname", "");
-                    time.put("hour_place", (i*2+1) + "." + (i*2+2) + "限 (" + (i+1) +"コマ)");
-                    time.put("text_color", "");
-                    menuList.add(time);
-
-                    Elements tdData = result.get(point + i).select("td");
-                    for(int pn=1;pn<places.length;pn++) { //場所のループ
-                        Map<String, String> menu = new HashMap<String, String>();
-                        String text = tdData.get(i==0?pn+1:pn).text(); //一番最初は曜日名が入るので一つずらす
-                        if(text.equals(String.valueOf('\u00A0'))||text.equals("")) //"",&nbsp;
-                            text = "空き";
-                        menu.put("classname", text);
-                        menu.put("hour_place", places[pn-1].replaceAll("_"," "));
-                        menu.put("text_color", "");
-                        menuList.add(menu);
-                    }
+                for(int i = 0; i < places.length; i++){
+                    places[i] = places[i].replaceAll("_"," "); //_を空白にする
+                    places[i] = places[i].replaceAll("　"," "); //全角空白を半角空白にする
+                    places[i] = StringUtil.fullWidthNumberToHalfWidthNumber(places[i]); //全角数字を半角数字に変換する
                 }
 
-                String[] from = {"hour_place","classname"};
-                int[] to = {android.R.id.text1, android.R.id.text2};
-                SimpleAdapter adapter = new SimpleAdapterPlus( parentActivity, menuList, android.R.layout.simple_list_item_2, from, to);
+                int point = page * 5 + 2 ; //trタグの位置
+                for(int i = 0; i < 5 ; i++){ //1から5コマのループ
+                    sectionList.add(new SectionHeaderData( (i*2+1) + "." + (i*2+2) + "限 (" + (i+1) +"コマ)", times[i]));
+                    List<SectionRowData> sectionDatalist = new ArrayList<SectionRowData>();
+                    Elements tdData = result.get(point + i).select("td");
+                    for(int pn=0;pn<places.length;pn++) { //場所のループ
+                        String text = tdData.get(i==0?pn+2:pn+1).text(); //一番最初は曜日名が入るので一つずらす
+                        if(text.equals(String.valueOf('\u00A0'))||text.equals("")) //"",&nbsp;
+                            text = "空き";
+                        sectionDatalist.add(new SectionRowData( text, places[pn]));
+                    }
+                    rowList.add(sectionDatalist);
+                }
+
+                CustomSectionListAdapter adapter = new CustomSectionListAdapter(parentActivity, sectionList, rowList);
                 listview.setAdapter(adapter);
 
                 //listview.setOnItemClickListener(new MainActivity.ListItemClickListener());
-/*
-                TableLayout tablelayout = (TableLayout)_view.findViewById(R.id.TableLayout);
-
-                List<Map<String, String>> menuList = new ArrayList<Map<String, String>>();
-                for(int i = 0; i < 5 ; i++) {
-                    // 行を追加
-                    parentActivity.getLayoutInflater().inflate(R.layout.pageview_tablelow, tablelayout);
-                    TableRow tr = (TableRow) tablelayout.getChildAt(i);
-                    // 文字設定
-                    Elements tdData = result.get(point + i).select("td");
-                    for(int j = 0; j < 5; j++) {
-                        ((TextView) (tr.getChildAt(j))).setText(tdData.get(j).text());
-                    }
-                }
-*/
 
             }
         }
 
-        private class SimpleAdapterPlus extends SimpleAdapter{
-            Context context;
-            LayoutInflater layoutInflater;
-            private List<? extends Map<String, ?>> mData;
-            String[] mfrom;
+        public class CustomSectionListAdapter extends BaseSectionAdapter<SectionHeaderData, SectionRowData> {
 
-            public SimpleAdapterPlus(Context context, List<? extends Map<String, ?>> data, int resource, String[] from, int[] to) {
-                super(context, data, resource, from, to);
-                this.context = context;
-                this.layoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                this.mData = data;
-                this.mfrom = from;
+            public CustomSectionListAdapter(Context context, List<SectionHeaderData> sectionList, List<List<SectionRowData>> rowList) {
+                super(context, sectionList, rowList);
             }
 
             @Override
-            public String getItem(int position){
-                Map setData = mData.get(position);
-                return setData.get(mfrom[0]).toString();
+            public View viewForHeaderInSection(View convertView, int section) {
+                ListHeaderViewHolder holder = null;
+                if (convertView == null) {
+                    convertView = inflater.inflate(R.layout.pageview_list_header, null);
+                    holder = new ListHeaderViewHolder();
+                    holder.titleTxt = (TextView) convertView.findViewById(R.id.titleTxt);
+                    holder.subtitleTxt = (TextView) convertView.findViewById(R.id.subtitleTxt);
+                    convertView.setTag(holder);
+                } else {
+                    holder = (ListHeaderViewHolder) convertView.getTag();
+                }
+                SectionHeaderData headerData = sectionList.get(section);
+                holder.titleTxt.setText(headerData.title);
+                holder.subtitleTxt.setText(headerData.subTitle);
+                return convertView;
             }
 
             @Override
-            public boolean isEnabled(int position) {
-                return !(getItem(position).toString().equals(""));
+            public View cellForRowAtIndexPath(View convertView, IndexPath indexPath) {
+                ListRowViewHolder holder = null;
+                if (convertView == null) {
+                    convertView = inflater.inflate(R.layout.pageview_list_row, null);
+                    holder = new ListRowViewHolder();
+                    holder.labelTxt = (TextView) convertView.findViewById(R.id.labelTxt);
+                    holder.valueTxt = (TextView) convertView.findViewById(R.id.valueTxt);
+                    convertView.setTag(holder);
+                } else {
+                    holder = (ListRowViewHolder) convertView.getTag();
+                }
+                SectionRowData rowData = rowList.get(indexPath.section).get(indexPath.row);
+                holder.labelTxt.setText(rowData.label);
+                holder.valueTxt.setText(rowData.value);
+                return convertView;
             }
 
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                View view = super.getView(position, convertView, parent);
-                //((TextView) view.findViewById(android.R.id.text1)).setTextColor(Color.BLUE);
-                //((TextView) view.findViewById(android.R.id.text2)).setText(""+ getItem(position));
-                if(position%(mData.size()/5)==0){
-                    view.setBackgroundColor(Color.rgb(0xfa,0xfa,0xd2));
-                }
-                else{
-                    view.setBackgroundColor(Color.rgb(0xff,0xff,0xff));
-                }
+            class ListHeaderViewHolder {
+                TextView titleTxt;
+                TextView subtitleTxt;
+            }
 
-                if (getItem(position).equals("time_header")) {
-                    View timeview = layoutInflater.inflate(R.layout.pageview_list_header, parent, false);
-                    timeview.setBackgroundColor(Color.rgb(0xfa,0xfa,0xd2));
-                    ((TextView) timeview.findViewById(R.id.head_text)).setText(getItem(position)+position);
-                    //return timeview;
-                }
-                return view;
+            class ListRowViewHolder {
+                TextView labelTxt;
+                TextView valueTxt;
             }
         }
     }
