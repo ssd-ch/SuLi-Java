@@ -217,9 +217,17 @@ public class PageView extends AppCompatActivity implements ViewPager.OnPageChang
                     Elements tdData = result.get(point + i).select("td");
                     for(int pn=0;pn<places.length;pn++) { //場所のループ
                         String text = tdData.get(i==0?pn+2:pn+1).text(); //一番最初は曜日名が入るので一つずらす
-                        if(text.equals(String.valueOf('\u00A0'))||text.equals("")) //"",&nbsp;
-                            text = "空き";
-                        sectionDatalist.add(new SectionRowData( text, places[pn]));
+
+                        String color = "#000000";
+                        if(text.equals(String.valueOf('\u00A0'))||text.equals("")||text.equals("¥n")) { //"",&nbsp;改行のみ
+                            text = "";
+                        }
+                        else{
+                            String style = tdData.get(i==0?pn+2:pn+1).select("span").attr("style");
+                            int m = style.indexOf("#");
+                            if(m >= 0) color = style.substring(m, m+7);
+                        }
+                        sectionDatalist.add(new SectionRowData( text, places[pn], color));
                     }
                     rowList.add(sectionDatalist);
                 }
@@ -270,6 +278,7 @@ public class PageView extends AppCompatActivity implements ViewPager.OnPageChang
                 }
                 SectionRowData rowData = rowList.get(indexPath.section).get(indexPath.row);
                 holder.labelTxt.setText(rowData.label);
+                holder.labelTxt.setTextColor(Color.parseColor(rowData.color));
                 holder.valueTxt.setText(rowData.value);
                 return convertView;
             }

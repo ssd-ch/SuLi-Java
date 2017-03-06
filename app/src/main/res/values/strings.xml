@@ -1,14 +1,7 @@
 <resources>
-    <string name="app_name">ShimaneUniversityBrowser</string>
+    <string name="app_name">島根大学講義情報</string>
     <string name="tv_thx_title">配当表</string>
     <string name="tv_thx_desc">以下が選択されました。</string>
     <string name="bt_thx_back">リストに戻る</string>
     <string name="title_activity_page_view2">PageView2</string>
-
-    <string name="column_place">場所</string>
-    <string name="time1">1.2</string>
-    <string name="time2">3.4</string>
-    <string name="time3">5.6</string>
-    <string name="time4">7.8</string>
-    <string name="time5">9.10</string>
 </resources>

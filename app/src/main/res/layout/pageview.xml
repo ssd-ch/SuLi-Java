@@ -11,6 +11,7 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:textSize="20sp"
+        android:padding="5dp"
         android:id="@+id/tvMenuName" />
 
     <android.support.design.widget.TabLayout
