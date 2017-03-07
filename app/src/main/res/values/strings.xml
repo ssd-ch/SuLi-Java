@@ -1,11 +1,18 @@
 <resources>
     <string name="app_name">島根大学講義情報</string>
-    <string name="tv_thx_title">配当表</string>
-    <string name="tv_thx_desc">以下が選択されました。</string>
-    <string name="bt_thx_back">リストに戻る</string>
-    <string name="title_activity_page_view2">PageView2</string>
 
     <string name="home_bt1">シラバス</string>
     <string name="home_bt2">教室配当表</string>
     <string name="home_bt3">休講情報</string>
+    
+    <string name="syllabus_department">学部</string>
+    <string name="syllabus_course">科目分類</string>
+    <string name="syllabus_class_name">授業名称</string>
+    <string name="syllabus_teacher_name">授業担当氏名</string>
+    <string name="syllabus_weekday">曜日</string>
+    <string name="syllabus_time">時限</string>
+
+    <string name="button_clear">クリア</string>
+    <string name="button_search">検索</string>
+
 </resources>
