@@ -26,8 +26,10 @@
             </intent-filter>
         </activity>
         <activity android:name=".BuildingListActivity" />
-        <activity android:name=".SyllabusActivity" />
-        <activity android:name=".CancellationInfo"></activity>
+        <activity android:name=".SyllabusFormActivity" />
+        <activity android:name=".CancellationInfo" />
+        <activity android:name=".SyllabusSearchResult" />
+        <activity android:name=".SyllabusView"></activity>
     </application>
 
 </manifest>
