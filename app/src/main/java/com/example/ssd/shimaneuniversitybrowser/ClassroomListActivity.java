@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.AsyncTask;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -16,9 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
-import android.annotation.SuppressLint;
 import android.widget.Toast;
 
 import org.jsoup.Jsoup;
@@ -27,18 +24,14 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class PageView extends AppCompatActivity implements ViewPager.OnPageChangeListener {
-
-    @SuppressLint("SetJavaScriptEnabled")
+public class ClassroomListActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.pageview);
+        setContentView(R.layout.activity_classroom_lists);
 
         Intent intent = getIntent();
         String menuName = intent.getStringExtra("menuName");
@@ -112,12 +105,11 @@ public class PageView extends AppCompatActivity implements ViewPager.OnPageChang
             return fragment;
         }
 
-        @Nullable
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
             //データを書き込むビューを取得
-            View view = inflater.inflate(R.layout.pageview_content, container, false);
+            View view = inflater.inflate(R.layout.classroom_lists_content, container, false);
 
             //コンストラクタの引数に表示させるパーツなどを指定
             HTMLPageReceiver receiver = new HTMLPageReceiver(view);
@@ -125,32 +117,7 @@ public class PageView extends AppCompatActivity implements ViewPager.OnPageChang
             //非同期処理を行う
             receiver.execute("");
 
-        /*
-            //レイアウトで指定したWebViewのIDを指定する。
-            WebView myWebView = (WebView)findViewById(R.id.webView1);
-
-            //リンクをタップしたときに標準ブラウザを起動させない
-            myWebView.setWebViewClient(new WebViewClient());
-
-            //ページの表示
-            myWebView.loadUrl(menuUrl);
-
-            //javascriptを許可する
-            myWebView.getSettings().setJavaScriptEnabled(true);
-        */
-
-            //Button btBackButton = (Button) view.findViewById(R.id.btBackButton);
-            //btBackButton.setOnClickListener(new ButtonClickListener());
-
             return view;
-        }
-
-        //フラグメントに戻るボタンを実装する
-        private class ButtonClickListener implements View.OnClickListener {
-            @Override
-            public void onClick(View view) {
-                parentActivity.finish();
-            }
         }
 
         private class HTMLPageReceiver extends AsyncTask<String, String, Elements> {
@@ -250,7 +217,7 @@ public class PageView extends AppCompatActivity implements ViewPager.OnPageChang
             public View viewForHeaderInSection(View convertView, int section) {
                 ListHeaderViewHolder holder = null;
                 if (convertView == null) {
-                    convertView = inflater.inflate(R.layout.pageview_list_header, null);
+                    convertView = inflater.inflate(R.layout.classroom_list_header, null);
                     holder = new ListHeaderViewHolder();
                     holder.titleTxt = (TextView) convertView.findViewById(R.id.titleTxt);
                     holder.subtitleTxt = (TextView) convertView.findViewById(R.id.subtitleTxt);
@@ -268,7 +235,7 @@ public class PageView extends AppCompatActivity implements ViewPager.OnPageChang
             public View cellForRowAtIndexPath(View convertView, IndexPath indexPath) {
                 ListRowViewHolder holder = null;
                 if (convertView == null) {
-                    convertView = inflater.inflate(R.layout.pageview_list_row, null);
+                    convertView = inflater.inflate(R.layout.classroom_list_row, null);
                     holder = new ListRowViewHolder();
                     holder.labelTxt = (TextView) convertView.findViewById(R.id.labelTxt);
                     holder.valueTxt = (TextView) convertView.findViewById(R.id.valueTxt);
