@@ -41,4 +41,22 @@ public class StringUtil {
         }
         return sb.toString();
     }
+
+    /**
+     * 文字列に含まれる空白が連続している場合は１つに短縮する
+     * 全角スペースは半角スペースに変換する
+     */
+    public static String replaceMultiSpaceToSingleSpace(String str){
+
+        // まずすべての全角スペースを半角に置換
+        str = str.replaceAll("　", " ");
+
+        // 文字列の先頭と、末尾のスペースを削除
+        //str = str.trim();
+
+        // 2文字以上続く半角スペースを削除
+        str = str.replaceAll("  *", " ");
+
+        return str;
+    }
 }

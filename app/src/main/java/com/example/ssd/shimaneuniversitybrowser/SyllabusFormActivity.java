@@ -53,6 +53,8 @@ public class SyllabusFormActivity extends AppCompatActivity {
 
         public void onPostExecute(Elements result) {
 
+            final String year = result.select("[name=nendo]").attr("value");
+
             /*
                 学部の項目設定
              */
@@ -143,7 +145,7 @@ public class SyllabusFormActivity extends AppCompatActivity {
                     Spinner spinner8 = (Spinner) parent_activity.findViewById(R.id.form6);
 
                     Intent intent = new Intent(parent_activity, SyllabusSearchResultActivity.class);
-                    intent.putExtra("data0", "2017");
+                    intent.putExtra("data0", year);
                     intent.putExtra("data1", values1[spinner1.getSelectedItemPosition()]);
                     intent.putExtra("data2", values2[spinner2.getSelectedItemPosition()]);
                     intent.putExtra("data3", edittext3.getText().toString());

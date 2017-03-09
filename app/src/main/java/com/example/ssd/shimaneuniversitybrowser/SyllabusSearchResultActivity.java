@@ -1,5 +1,8 @@
 package com.example.ssd.shimaneuniversitybrowser;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -8,11 +11,13 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.w3c.dom.Text;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -32,16 +37,16 @@ public class SyllabusSearchResultActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_syllabus_search_result);
 
+        ListView listview = (ListView)findViewById(R.id.listView1);
+
         Intent intent = getIntent();
         String[] searchData = new String[10];
         for(int i = 0; i< searchData.length; i++){
             searchData[i] = intent.getStringExtra("data"+i);
         }
 
-        ListView View = (ListView) findViewById(R.id.listView1);
-
         //コンストラクタの引数に表示させるパーツを指定
-        SyllabusSearchResultActivity.SyllabusSearchListReceiver receiver = new SyllabusSearchResultActivity.SyllabusSearchListReceiver( View, searchData);
+        SyllabusSearchResultActivity.SyllabusSearchListReceiver receiver = new SyllabusSearchResultActivity.SyllabusSearchListReceiver(listview,searchData);
         //非同期処理を行う 引数はURLとセレクトタグ
         receiver.execute("http://gakumuweb1.shimane-u.ac.jp/shinwa/SYOutsideReferSearchList", "body tr");
 
@@ -52,12 +57,10 @@ public class SyllabusSearchResultActivity extends AppCompatActivity {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             Map<String, String> item = (Map<String, String>) parent.getItemAtPosition(position);
-            String menuName = item.get("name");
-            String menuUrl = item.get("url");
+            String url = item.get("url");
 
             Intent intent = new Intent(SyllabusSearchResultActivity.this, SyllabusViewActivity.class);
-            intent.putExtra("menuName", menuName);
-            intent.putExtra("menuUrl", menuUrl);
+            intent.putExtra("url", url);
             startActivity(intent);
         }
     }
@@ -115,30 +118,40 @@ public class SyllabusSearchResultActivity extends AppCompatActivity {
 
         public void onPostExecute(Elements result) {
 
-            List<Map<String, String>> List = new ArrayList<Map<String, String>>();
-            for(int i = 1; i < result.size(); i++){
-                Map<String, String> menu = new HashMap<String, String>();
-                Elements elements = result.get(i).select("td");
-                int position = elements.get(2).text().indexOf("／")-1; //英語名はカット
-                if(position<0) position = elements.get(2).text().length();
-                menu.put("class_name", elements.get(2).text().substring(0,position));
-                menu.put("teacher", elements.get(3).text());
-                List.add(menu);
+            if(result.size()<1) {
+                new AlertDialog.Builder(SyllabusSearchResultActivity.this)
+                        .setTitle("検索結果")
+                        .setMessage("入力条件に該当するシラバスが存在しません")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener(){
+                            public void onClick(DialogInterface dialog, int which) {
+                                //okボタンが押された時の処理
+                                SyllabusSearchResultActivity.this.finish();
+                            }
+                        })
+                        .show();
+            }else {
+
+                List<Map<String, String>> List = new ArrayList<Map<String, String>>();
+                for (int i = 1; i < result.size(); i++) {
+                    Map<String, String> menu = new HashMap<String, String>();
+                    Elements elements = result.get(i).select("td");
+                    int position = elements.get(2).text().indexOf("／") - 1; //英語名はカット
+                    if (position < 0) position = elements.get(2).text().length();
+                    menu.put("class_name", elements.get(2).text().substring(0, position));
+                    menu.put("teacher", elements.get(3).text().replaceAll("　　", "　").replaceAll("，　","，"));
+                    menu.put("url", elements.select("a").attr("abs:href"));
+                    List.add(menu);
+                }
+
+
+                String[] from = {"class_name", "teacher"};
+                int[] to = {android.R.id.text1, android.R.id.text2};
+                SimpleAdapter adapter = new SimpleAdapter(SyllabusSearchResultActivity.this, List, android.R.layout.simple_list_item_2, from, to);
+                _view.setAdapter(adapter);
+
+                _view.setOnItemClickListener(new SyllabusSearchResultActivity.ListItemClickListener());
+
             }
-            if(result.size()<1){
-                Map<String, String> menu = new HashMap<String, String>();
-                menu.put("class_name", "該当なし");
-                menu.put("teacher", _data[2]);
-                List.add(menu);
-            }
-
-            String[] from = {"class_name","teacher"};
-            int[] to = {android.R.id.text1,android.R.id.text2};
-            SimpleAdapter adapter = new SimpleAdapter(SyllabusSearchResultActivity.this, List, android.R.layout.simple_list_item_2, from, to);
-            _view.setAdapter(adapter);
-
-            _view.setOnItemClickListener(new SyllabusSearchResultActivity.ListItemClickListener());
-
         }
 
     }
