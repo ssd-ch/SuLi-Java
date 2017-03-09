@@ -28,8 +28,8 @@
         <activity android:name=".BuildingListActivity" />
         <activity android:name=".SyllabusFormActivity" />
         <activity android:name=".CancellationInfo" />
-        <activity android:name=".SyllabusSearchResult" />
-        <activity android:name=".SyllabusView"></activity>
+        <activity android:name=".SyllabusSearchResultActivity" />
+        <activity android:name=".SyllabusViewActivity"></activity>
     </application>
 
 </manifest>

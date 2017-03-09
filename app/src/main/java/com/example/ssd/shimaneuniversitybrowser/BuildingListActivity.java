@@ -30,7 +30,7 @@ public class BuildingListActivity extends AppCompatActivity {
         ListView tvView = (ListView)findViewById(R.id.listView1);
 
         //コンストラクタの引数に表示させるパーツを指定
-        BuildingListActivity.PageListReceiver receiver = new BuildingListActivity.PageListReceiver(tvView);
+        BuildingListReceiver receiver = new BuildingListReceiver(tvView);
         //非同期処理を行う 引数はURLとセレクトタグ
         receiver.execute("http://www.shimane-u.ac.jp/education/school_info/class_data/class_data01.html",".body li a");
 
@@ -51,10 +51,10 @@ public class BuildingListActivity extends AppCompatActivity {
         }
     }
 
-    private class PageListReceiver extends AsyncTask<String, String, Elements> {
+    private class BuildingListReceiver extends AsyncTask<String, String, Elements> {
         private ListView _tvView;
 
-        public PageListReceiver(ListView tvView){
+        public BuildingListReceiver(ListView tvView){
             _tvView = tvView;
         }
 
@@ -91,5 +91,7 @@ public class BuildingListActivity extends AppCompatActivity {
 
             _tvView.setOnItemClickListener(new BuildingListActivity.ListItemClickListener());
         }
+
+
     }
 }
