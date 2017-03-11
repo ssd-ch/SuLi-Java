@@ -1,5 +1,7 @@
 package com.example.ssd.shimaneuniversitybrowser;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -8,7 +10,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.Toast;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -26,6 +27,8 @@ public class BuildingListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_building_list);
+
+        setTitle(R.string.title_building_list);
 
         ListView tvView = (ListView)findViewById(R.id.listView1);
 
@@ -67,29 +70,59 @@ public class BuildingListActivity extends AppCompatActivity {
                 Elements data = doc.select(select);
                 return data;
             } catch (Exception e) {
-                Toast.makeText(BuildingListActivity.this, "取得失敗", Toast.LENGTH_LONG).show();
+                return null;
             }
-            return null;
         }
 
         public void onPostExecute(Elements result) {
 
-            List<Map<String, String>> menuList = new ArrayList<Map<String, String>>();
-            for(Element element : result){
-                Map<String, String> menu = new HashMap<String, String>();
-                menu.put("name", element.text().replace("教室配当表_","").replaceAll("_"," "));
-                menu.put("url", element.attr("abs:href"));
-                menuList.add(menu);
+            if(result==null){
+                new AlertDialog.Builder(BuildingListActivity.this)
+                        .setTitle(R.string.error_title_data_response)
+                        .setMessage(R.string.error_message_response_refuse)
+                        .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener(){
+                            public void onClick(DialogInterface dialog, int which) {
+                                //okボタンが押された時の処理
+                                BuildingListActivity.this.finish();
+                            }
+                        })
+                        .show();
             }
+            else {
 
-            //String[] from = {"name", "url"};
-            //int[] to = {android.R.id.text1, android.R.id.text2};
-            String[] from = {"name"};
-            int[] to = {android.R.id.text1};
-            SimpleAdapter adapter = new SimpleAdapter(BuildingListActivity.this, menuList, android.R.layout.simple_list_item_1, from, to);
-            _tvView.setAdapter(adapter);
+                    List<Map<String, String>> menuList = new ArrayList<Map<String, String>>();
 
-            _tvView.setOnItemClickListener(new BuildingListActivity.ListItemClickListener());
+                try{
+
+                    for (Element element : result) {
+                        Map<String, String> menu = new HashMap<String, String>();
+                        menu.put("name", element.text().replace("教室配当表_", "").replaceAll("_", " "));
+                        menu.put("url", element.attr("abs:href"));
+                        menuList.add(menu);
+                    }
+
+                    //String[] from = {"name", "url"};
+                    //int[] to = {android.R.id.text1, android.R.id.text2};
+                    String[] from = {"name"};
+                    int[] to = {android.R.id.text1};
+                    SimpleAdapter adapter = new SimpleAdapter(BuildingListActivity.this, menuList, android.R.layout.simple_list_item_1, from, to);
+                    _tvView.setAdapter(adapter);
+
+                    _tvView.setOnItemClickListener(new BuildingListActivity.ListItemClickListener());
+
+                }catch(Exception e){
+                    new AlertDialog.Builder(BuildingListActivity.this)
+                            .setTitle(R.string.error_title_data_response)
+                            .setMessage(R.string.error_message_data_invalid)
+                            .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener(){
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //okボタンが押された時の処理
+                                    BuildingListActivity.this.finish();
+                                }
+                            })
+                            .show();
+                }
+            }
         }
 
 

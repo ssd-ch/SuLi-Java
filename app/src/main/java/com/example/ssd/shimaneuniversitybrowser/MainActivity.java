@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         NextButton3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, CancellationInfo.class);
+                Intent intent = new Intent(MainActivity.this, CancellationInfoActivity.class);
                 startActivity(intent);
             }
         });

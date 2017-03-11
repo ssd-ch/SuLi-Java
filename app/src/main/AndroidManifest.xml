@@ -27,7 +27,7 @@
         </activity>
         <activity android:name=".BuildingListActivity" />
         <activity android:name=".SyllabusFormActivity" />
-        <activity android:name=".CancellationInfo" />
+        <activity android:name=".CancellationInfoActivity" />
         <activity android:name=".SyllabusSearchResultActivity" />
         <activity android:name=".SyllabusViewActivity"></activity>
     </application>

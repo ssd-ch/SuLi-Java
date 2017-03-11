@@ -1,10 +1,24 @@
 <resources>
+    <!--アプリ名-->
     <string name="app_name">島根大学講義情報</string>
 
+    <!--OKボタンのテキスト-->
+    <string name="button_ok">OK</string>
+
+    <!--タイトルバーのテキスト-->
+    <string name="title_syllabus_form">シラバス検索</string>
+    <string name="title_syllabus_search_result">検索結果</string>
+    <string name="title_syllabus_view">シラバス参照</string>
+    <string name="title_building_list">教室配当表</string>
+    <string name="title_classroom_lists">教室配当表</string><!--建物名にしてるから使ってない-->
+    <string name="title_cancellation_info">休講情報</string>
+
+    <!--ホームのボタン-->
     <string name="home_bt1">シラバス</string>
     <string name="home_bt2">教室配当表</string>
     <string name="home_bt3">休講情報</string>
 
+    <!--シラバス検索のフォームの項目名-->
     <string name="syllabus_department">学部</string>
     <string name="syllabus_course">科目分類</string>
     <string name="syllabus_class_name">授業名称</string>
@@ -12,7 +26,45 @@
     <string name="syllabus_weekday">曜日</string>
     <string name="syllabus_time">時限</string>
 
+    <!--シラバス検索のボタン-->
     <string name="button_clear">クリア</string>
     <string name="button_search">検索</string>
+
+    <!--シラバス検索の結果が0件の時のダイアログ-->
+    <string name="dialog_title_search_result">検索結果</string>
+    <string name="dialog_message_search_result">入力条件に該当するシラバスが存在しません</string>
+
+    <!--エラー時のメッセージ-->
+    <string name="error_title_data_response">取得失敗</string>
+    <string name="error_message_response_refuse">データの取得に失敗しました</string>
+    <string name="error_message_data_invalid">取得したデータが不正です</string>
+    <string name="error_message_input_invalid">入力したデータが不正です</string>
+    
+    <!--シラバス閲覧のリストビューのヘッダ-->
+    <string name="syllabus_basic">基本データ</string>
+    <string name="syllabus_contents">講義内容</string>
+    <string name="syllabus_teacher_list">担当教員一覧</string>
+
+    <!--教室配当表のタブ名のテキスト-->
+    <string-array name="tab_weekday">
+        <item>月</item>
+        <item>火</item>
+        <item>水</item>
+        <item>木</item>
+        <item>金</item>
+    </string-array>
+
+    <!--講義の時間(１コマ〜５コマ)-->
+    <string-array name="time_separate">
+        <item> 8:30〜10:00</item>
+        <item>10:15〜11:45</item>
+        <item>12:45〜14:15</item>
+        <item>14:30〜16:00</item>
+        <item>16:15〜17:45</item>
+    </string-array>
+
+    <!--単位-->
+    <string name="results">件</string><!--検索結果の件数-->
+
 
 </resources>

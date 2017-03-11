@@ -1,7 +1,9 @@
 package com.example.ssd.shimaneuniversitybrowser;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
@@ -16,7 +18,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -36,12 +37,14 @@ public class ClassroomListActivity extends AppCompatActivity implements ViewPage
         Intent intent = getIntent();
         String menuName = intent.getStringExtra("menuName");
 
+        setTitle(menuName);
+
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
 
         FragmentPagerAdapter adapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
-            //pagetitleに指定した文字をページ名として追加する
-            private String[] pagetitle = {"月","火","水","木","金"};
+            //pageTitleに指定した文字をページ名として追加する
+            private String[] pageTitle = getResources().getStringArray(R.array.tab_weekday);
 
             @Override
             public Fragment getItem(int position) {
@@ -50,12 +53,12 @@ public class ClassroomListActivity extends AppCompatActivity implements ViewPage
 
             @Override
             public CharSequence getPageTitle(int position) {
-                return pagetitle[position];
+                return pageTitle[position];
             }
 
             @Override
             public int getCount() {
-                return pagetitle.length;
+                return pageTitle.length;
             }
         };
 
@@ -64,9 +67,6 @@ public class ClassroomListActivity extends AppCompatActivity implements ViewPage
 
         //オートマチック方式: これだけで両方syncする
         tabLayout.setupWithViewPager(viewPager);
-
-        TextView tvMenuName = (TextView)findViewById(R.id.tvMenuName);
-        tvMenuName.setText(menuName);
     }
 
     @Override
@@ -135,74 +135,97 @@ public class ClassroomListActivity extends AppCompatActivity implements ViewPage
                 Intent intent = parentActivity.getIntent();
                 String url = intent.getStringExtra("menuUrl"); //URL
                 String select = ".body tr"; //select tag
+
                 try {
                     Document doc = Jsoup.connect(url).get();
                     Elements data = doc.select(select);
                     return data;
                 } catch (Exception e) {
-                    Toast.makeText(parentActivity, "取得失敗", Toast.LENGTH_LONG).show();
                     return null;
                 }
             }
 
             public void onPostExecute(Elements result) {
 
-                int page = getArguments().getInt("page", 0);
+                if (result==null) {
+                    new AlertDialog.Builder(parentActivity)
+                            .setTitle(R.string.error_title_data_response)
+                            .setMessage(R.string.error_message_response_refuse)
+                            .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //okボタンが押された時の処理
+                                    parentActivity.finish();
+                                }
+                            })
+                            .show();
+                }else {
 
-                //コンテキストからURL引き継ぎ
-                Intent intent = parentActivity.getIntent();
-                String url = intent.getStringExtra("menuUrl"); //URL
+                    int page = getArguments().getInt("page", 0);
 
-                //((TextView) _view.findViewById(R.id.page_text)).setText("Page " + page);
-                //((TextView) _view.findViewById(R.id.tvMenuUrl)).setText(url);
-                ListView listview = (ListView) _view.findViewById(R.id.listView);
+                    ListView listview = (ListView) _view.findViewById(R.id.listView);
 
-                List<SectionHeaderData> sectionList = new ArrayList<SectionHeaderData>();
-                List<List<SectionRowData>> rowList = new ArrayList<List<SectionRowData>>();
+                    List<SectionHeaderData> sectionList = new ArrayList<SectionHeaderData>();
+                    List<List<SectionRowData>> rowList = new ArrayList<List<SectionRowData>>();
 
-                String[] places = new String[result.get(2).select("td").size()-2];
-                String[] times = {"8:30〜10:00","10:15〜11:45","12:45〜14:15","14:30〜16:00","16:15〜17:45"};
-                int k = 0,l = 0;
-                for(int i=1;i<result.get(0).select("td").size();i++){
-                    Element td = result.get(0).select("td").get(i);
-                    for(int j=0;j< (td.attr("colspan").equals("") ? 1 : Integer.parseInt(td.attr("colspan")));j++){
-                        if(td.attr("rowspan").equals(""))
-                            places[l++] = td.text() +"_"+ result.get(1).select("td").get(k++).text();
-                        else places[l++] = td.text();
+                    try {
+
+                        String[] places = new String[result.get(2).select("td").size() - 2];
+                        String[] times = getResources().getStringArray(R.array.time_separate);
+
+                        int k = 0, l = 0;
+                        for (int i = 1; i < result.get(0).select("td").size(); i++) {
+                            Element td = result.get(0).select("td").get(i);
+                            for (int j = 0; j < (td.attr("colspan").equals("") ? 1 : Integer.parseInt(td.attr("colspan"))); j++) {
+                                if (td.attr("rowspan").equals(""))
+                                    places[l++] = td.text() + "_" + result.get(1).select("td").get(k++).text();
+                                else places[l++] = td.text();
+                            }
+                        }
+                        for (int i = 0; i < places.length; i++) {
+                            places[i] = places[i].replaceAll("_", " "); //_を空白にする
+                            places[i] = places[i].replaceAll("　", " "); //全角空白を半角空白にする
+                            places[i] = StringUtil.fullWidthNumberToHalfWidthNumber(places[i]); //全角数字を半角数字に変換する
+                        }
+
+                        int point = page * 5 + 2; //trタグの位置
+                        for (int i = 0; i < times.length; i++) { //1から5コマのループ
+                            sectionList.add(new SectionHeaderData((i * 2 + 1) + "." + (i * 2 + 2) + "限 (" + (i + 1) + "コマ)", times[i]));
+                            List<SectionRowData> sectionDatalist = new ArrayList<SectionRowData>();
+                            Elements tdData = result.get(point + i).select("td");
+                            for (int pn = 0; pn < places.length; pn++) { //場所のループ
+                                String text = tdData.get(i == 0 ? pn + 2 : pn + 1).text(); //一番最初は曜日名が入るので一つずらす
+
+                                String color = "#000000";
+                                if (text.equals(String.valueOf('\u00A0')) || text.equals("") || text.equals("¥n")) { //"",&nbsp;改行のみ
+                                    text = "";
+                                } else {
+                                    String style = tdData.get(i == 0 ? pn + 2 : pn + 1).select("span").attr("style");
+                                    int m = style.indexOf("#");
+                                    if (m >= 0) color = style.substring(m, m + 7);
+                                }
+                                sectionDatalist.add(new SectionRowData(text, places[pn], color));
+                            }
+                            rowList.add(sectionDatalist);
+                        }
+
+                        CustomSectionListAdapter adapter = new CustomSectionListAdapter(parentActivity, sectionList, rowList);
+                        listview.setAdapter(adapter);
+
+                        //listview.setOnItemClickListener(new MainActivity.ListItemClickListener());
+
+                    } catch (Exception e) {
+                        new AlertDialog.Builder(parentActivity)
+                                .setTitle(R.string.error_title_data_response)
+                                .setMessage(R.string.error_message_data_invalid)
+                                .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        //okボタンが押された時の処理
+                                        parentActivity.finish();
+                                    }
+                                })
+                                .show();
                     }
                 }
-                for(int i = 0; i < places.length; i++){
-                    places[i] = places[i].replaceAll("_"," "); //_を空白にする
-                    places[i] = places[i].replaceAll("　"," "); //全角空白を半角空白にする
-                    places[i] = StringUtil.fullWidthNumberToHalfWidthNumber(places[i]); //全角数字を半角数字に変換する
-                }
-
-                int point = page * 5 + 2 ; //trタグの位置
-                for(int i = 0; i < 5 ; i++){ //1から5コマのループ
-                    sectionList.add(new SectionHeaderData( (i*2+1) + "." + (i*2+2) + "限 (" + (i+1) +"コマ)", times[i]));
-                    List<SectionRowData> sectionDatalist = new ArrayList<SectionRowData>();
-                    Elements tdData = result.get(point + i).select("td");
-                    for(int pn=0;pn<places.length;pn++) { //場所のループ
-                        String text = tdData.get(i==0?pn+2:pn+1).text(); //一番最初は曜日名が入るので一つずらす
-
-                        String color = "#000000";
-                        if(text.equals(String.valueOf('\u00A0'))||text.equals("")||text.equals("¥n")) { //"",&nbsp;改行のみ
-                            text = "";
-                        }
-                        else{
-                            String style = tdData.get(i==0?pn+2:pn+1).select("span").attr("style");
-                            int m = style.indexOf("#");
-                            if(m >= 0) color = style.substring(m, m+7);
-                        }
-                        sectionDatalist.add(new SectionRowData( text, places[pn], color));
-                    }
-                    rowList.add(sectionDatalist);
-                }
-
-                CustomSectionListAdapter adapter = new CustomSectionListAdapter(parentActivity, sectionList, rowList);
-                listview.setAdapter(adapter);
-
-                //listview.setOnItemClickListener(new MainActivity.ListItemClickListener());
 
             }
         }
@@ -217,7 +240,7 @@ public class ClassroomListActivity extends AppCompatActivity implements ViewPage
             public View viewForHeaderInSection(View convertView, int section) {
                 ListHeaderViewHolder holder = null;
                 if (convertView == null) {
-                    convertView = inflater.inflate(R.layout.classroom_list_header, null);
+                    convertView = inflater.inflate(R.layout.list_header, null);
                     holder = new ListHeaderViewHolder();
                     holder.titleTxt = (TextView) convertView.findViewById(R.id.titleTxt);
                     holder.subtitleTxt = (TextView) convertView.findViewById(R.id.subtitleTxt);
@@ -235,7 +258,7 @@ public class ClassroomListActivity extends AppCompatActivity implements ViewPage
             public View cellForRowAtIndexPath(View convertView, IndexPath indexPath) {
                 ListRowViewHolder holder = null;
                 if (convertView == null) {
-                    convertView = inflater.inflate(R.layout.classroom_list_row, null);
+                    convertView = inflater.inflate(R.layout.list_row, null);
                     holder = new ListRowViewHolder();
                     holder.labelTxt = (TextView) convertView.findViewById(R.id.labelTxt);
                     holder.valueTxt = (TextView) convertView.findViewById(R.id.valueTxt);
