@@ -169,7 +169,7 @@ public class SyllabusFormActivity extends AppCompatActivity {
                             intent.putExtra("data6", edittext4.getText().toString());
                             intent.putExtra("data7", values3[spinner7.getSelectedItemPosition()]);
                             intent.putExtra("data8", values4[spinner8.getSelectedItemPosition()]);
-                            intent.putExtra("data9", "200");
+                            intent.putExtra("data9", "100");
                             startActivity(intent);
                         }
                     });
