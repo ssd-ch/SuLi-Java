@@ -97,7 +97,8 @@ public class SyllabusViewActivity extends AppCompatActivity {
                 Elements thData2 = result.select("table.normal").get(1).select("th");
                 final String BR = System.getProperty("line.separator");
                 for (int i = 0; i < tdData2.size(); i++) {
-                    sectionDatalist2.add(new SectionRowData(thData2.get(i).text(), tdData2.get(i).html().replaceAll("<br>", BR), ""));
+                    String str = tdData2.get(i).html().replaceAll("<br>", BR);
+                    sectionDatalist2.add(new SectionRowData(thData2.get(i).text(), str.replaceAll("<.+?>",""),""));
                 }
                 rowList.add(sectionDatalist2);
 

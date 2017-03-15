@@ -29,7 +29,10 @@
         <activity android:name=".SyllabusFormActivity" />
         <activity android:name=".CancellationInfoActivity" />
         <activity android:name=".SyllabusSearchResultActivity" />
-        <activity android:name=".SyllabusViewActivity"></activity>
+        <activity android:name=".SyllabusViewActivity" />
+        <activity android:name=".PlacesSearchModeActivity" />
+        <activity android:name=".AllPlacesListActivity" />
+        <activity android:name=".PlacesSearchClassnameActivity"></activity>
     </application>
 
 </manifest>
