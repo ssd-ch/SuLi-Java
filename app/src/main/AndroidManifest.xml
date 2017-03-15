@@ -32,7 +32,8 @@
         <activity android:name=".SyllabusViewActivity" />
         <activity android:name=".PlacesSearchModeActivity" />
         <activity android:name=".AllPlacesListActivity" />
-        <activity android:name=".PlacesSearchClassnameActivity"></activity>
+        <activity android:name=".PlacesSearchFormActivity" />
+        <activity android:name=".PlacesSearchResultActivity"></activity>
     </application>
 
 </manifest>

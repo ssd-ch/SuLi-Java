@@ -38,7 +38,7 @@ public class PlacesSearchModeActivity extends AppCompatActivity {
         NextButton3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(PlacesSearchModeActivity.this, PlacesSearchClassnameActivity.class);
+                Intent intent = new Intent(PlacesSearchModeActivity.this, PlacesSearchFormActivity.class);
                 startActivity(intent);
             }
         });

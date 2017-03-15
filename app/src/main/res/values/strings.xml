@@ -5,6 +5,10 @@
     <!--OKボタンのテキスト-->
     <string name="button_ok">OK</string>
 
+    <!--検索フォームのボタン-->
+    <string name="button_clear">クリア</string>
+    <string name="button_search">検索</string>
+
     <!--タイトルバーのテキスト-->
     <string name="title_syllabus_form">シラバス検索</string>
     <string name="title_syllabus_search_result">検索結果</string>
@@ -12,6 +16,8 @@
     <string name="title_building_list">教室配当表</string>
     <string name="title_places_search_mode">教室配当表</string>
     <string name="title_all_places_list">教室配当表</string>
+    <string name="title_places_search_form">教室配当検索</string>
+    <string name="title_places_search_result">検索結果</string>
     <string name="title_cancellation_info">休講情報</string>
 
     <!--ホームのボタン-->
@@ -26,10 +32,6 @@
     <string name="syllabus_teacher_name">授業担当氏名</string>
     <string name="syllabus_weekday">曜日</string>
     <string name="syllabus_time">時限</string>
-
-    <!--シラバス検索のボタン-->
-    <string name="button_clear">クリア</string>
-    <string name="button_search">検索</string>
 
     <!--シラバス検索の結果が0件の時のダイアログ-->
     <string name="dialog_title_search_result">検索結果</string>
@@ -58,6 +60,30 @@
         <item>水</item>
         <item>木</item>
         <item>金</item>
+    </string-array>
+
+    <!--教室配当検索のフォームの項目名-->
+    <string name="places_class_name">授業名称</string>
+    <string name="places_teacher_name">授業担当者名</string>
+    <string name="places_weekday">曜日</string>
+    <string name="places_time">時限</string>
+
+    <!--教室配当検索のフォームの検索データ-->
+    <string-array name="places_search_data_weekday">
+        <item>指定なし</item>
+        <item>月</item>
+        <item>火</item>
+        <item>水</item>
+        <item>木</item>
+        <item>金</item>
+    </string-array>
+    <string-array name="places_search_data_time">
+        <item>指定なし</item>
+        <item>1.2限</item>
+        <item>3.4限</item>
+        <item>5.6限</item>
+        <item>7.8限</item>
+        <item>9.10限</item>
     </string-array>
 
     <!--講義の時間(１コマ〜５コマ)-->
