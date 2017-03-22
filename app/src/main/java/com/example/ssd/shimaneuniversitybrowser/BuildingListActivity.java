@@ -90,7 +90,7 @@ public class BuildingListActivity extends AppCompatActivity {
             }
             else {
 
-                    List<Map<String, String>> menuList = new ArrayList<Map<String, String>>();
+                List<Map<String, String>> menuList = new ArrayList<Map<String, String>>();
 
                 try{
 
