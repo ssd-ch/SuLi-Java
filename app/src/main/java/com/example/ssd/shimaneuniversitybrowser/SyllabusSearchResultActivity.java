@@ -50,7 +50,7 @@ public class SyllabusSearchResultActivity extends AppCompatActivity {
         road_limiter = false;
         s_cnt = 0;
 
-        listview = (ListView)findViewById(R.id.listView1);
+        listview = (ListView)findViewById(R.id.listView);
         footer = getLayoutInflater().inflate(R.layout.list_footer_roading, null);
 
         Intent intent = getIntent();
@@ -174,7 +174,7 @@ public class SyllabusSearchResultActivity extends AppCompatActivity {
                 listview.removeFooterView(footer); //フッターの削除
                 new AlertDialog.Builder(SyllabusSearchResultActivity.this)
                         .setTitle(R.string.dialog_title_search_result)
-                        .setMessage(R.string.dialog_message_search_result)
+                        .setMessage(R.string.dialog_message_search_result_syllabus)
                         .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener(){
                             public void onClick(DialogInterface dialog, int which) {
                                 //okボタンが押された時の処理

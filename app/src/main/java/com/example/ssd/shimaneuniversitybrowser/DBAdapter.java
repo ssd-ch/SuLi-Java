@@ -64,22 +64,22 @@ public class DBAdapter {
      * @param column 列名
      * @param value 値
      */
-    public void saveDB( String table, String[] column, String[] value) {
+    public void saveDB( String table, String[] column, String[][] value) {
 
         db.beginTransaction();          // トランザクション開始
 
         try {
-            ContentValues values = new ContentValues();     // ContentValuesでデータを設定していく
-            for(int i = 0; i < column.length; i++) {
-                values.put( column[i], value[i]);
+            for (int i = 0; i < value.length; i++) {
+                ContentValues values = new ContentValues();     // ContentValuesでデータを設定していく
+                for (int j = 0; j < column.length; j++) {
+                        values.put(column[j], value[i][j]);
+                }
+                // insertメソッド データ登録
+                // 第1引数：DBのテーブル名
+                // 第2引数：更新する条件式
+                // 第3引数：ContentValues
+                db.insert( table, null, values);      // レコードへ登録
             }
-
-            // insertメソッド データ登録
-            // 第1引数：DBのテーブル名
-            // 第2引数：更新する条件式
-            // 第3引数：ContentValues
-            db.insert( table, null, values);      // レコードへ登録
-
             db.setTransactionSuccessful();      // トランザクションへコミット
         } catch (Exception e) {
             e.printStackTrace();
@@ -91,6 +91,7 @@ public class DBAdapter {
     /**
      * DBのデータを取得
      * getDB()
+     * _idの昇順にソートする
      *
      * @param table String テーブル名
      * @param columns String[] 取得するカラム名 nullの場合は全カラムを取得
@@ -106,12 +107,13 @@ public class DBAdapter {
         // 第5引数：集計条件(GROUP BY句)
         // 第6引数：選択条件(HAVING句)
         // 第7引数：ソート条件(ORDER BY句)
-        return db.query( table, columns, null, null, null, null, null);
+        return db.query( table, columns, null, null, null, null, "_id ASC");
     }
 
     /**
      * DBの検索したデータを取得
      * searchDB()
+     * _idの昇順にソートする
      *
      * @param table String 取得するテーブル名
      * @param columns String[] 取得するカラム名 nullの場合は全カラムを取得
@@ -120,7 +122,7 @@ public class DBAdapter {
      * @return DBの検索したデータ
      */
     public Cursor searchDB(String table, String[] columns, String column, String[] name) {
-        return db.query( table, columns, column + " like ?", name, null, null, null);
+        return db.query( table, columns, column, name, null, null, "_id ASC");
     }
 
     /**

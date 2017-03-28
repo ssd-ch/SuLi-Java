@@ -4,8 +4,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.database.Cursor;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -19,11 +19,6 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,9 +30,9 @@ public class ClassroomListActivity extends AppCompatActivity implements ViewPage
         setContentView(R.layout.activity_classroom_lists);
 
         Intent intent = getIntent();
-        String menuName = intent.getStringExtra("menuName");
+        String building_name = intent.getStringExtra("building_name");
 
-        setTitle(menuName);
+        setTitle(building_name);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
@@ -111,123 +106,61 @@ public class ClassroomListActivity extends AppCompatActivity implements ViewPage
             //データを書き込むビューを取得
             View view = inflater.inflate(R.layout.classroom_lists_content, container, false);
 
-            //コンストラクタの引数に表示させるパーツなどを指定
-            HTMLPageReceiver receiver = new HTMLPageReceiver(view);
+            Intent intent = parentActivity.getIntent();
+            String id = intent.getStringExtra("id");
 
-            //非同期処理を行う
-            receiver.execute("");
+            ListView listview = (ListView) view.findViewById(R.id.listView);
+
+            int page = getArguments().getInt("page", 0);
+
+            DBAdapter dbAdapter = new DBAdapter(parentActivity);
+            dbAdapter.openDB();
+
+            List<SectionHeaderData> sectionList = new ArrayList<SectionHeaderData>();
+            List<List<SectionRowData>> rowList = new ArrayList<List<SectionRowData>>();
+
+            try {
+
+                String[] times = getResources().getStringArray(R.array.time_period); //コマ
+                String[] times_m = getResources().getStringArray(R.array.time_period_m); //時間（時、分）
+
+                for (int i = 0; i < times.length; i++) { //1から5コマのループ
+                    Cursor cursor = dbAdapter.searchDB("ClassroomDivide", null,
+                            "building_id = ? and weekday = ? and time = ?", new String[]{id,String.valueOf(page),String.valueOf(i)});
+                    cursor.moveToFirst();
+                    int col_place = cursor.getColumnIndex("place");
+                    int col_text = cursor.getColumnIndex("cell_text");
+                    int col_color = cursor.getColumnIndex("cell_color");
+
+                    sectionList.add(new SectionHeaderData(times[i], times_m[i]));
+                    List<SectionRowData> sectionDataList = new ArrayList<SectionRowData>();
+                    do { //部屋のループ
+                        sectionDataList.add(new SectionRowData(cursor.getString(col_text), cursor.getString(col_place), cursor.getString(col_color)));
+                    } while (cursor.moveToNext());
+                    rowList.add(sectionDataList);
+                    cursor.close();
+                }
+
+                CustomSectionListAdapter adapter = new CustomSectionListAdapter( parentActivity, sectionList, rowList);
+                listview.setAdapter(adapter);
+                //listview.setOnItemClickListener(new MainActivity.ListItemClickListener());
+
+            }catch (Exception e){
+                new AlertDialog.Builder(parentActivity)
+                        .setTitle(R.string.error_title_data_response)
+                        .setMessage(R.string.error_message_response_refuse)
+                        .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                //okボタンが押された時の処理
+                                parentActivity.finish();
+                            }
+                        })
+                        .show();
+            }finally {
+                dbAdapter.closeDB();
+            }
 
             return view;
-        }
-
-        private class HTMLPageReceiver extends AsyncTask<String, String, Elements> {
-
-            private View _view;
-
-            public HTMLPageReceiver(View view){
-                _view = view;
-            }
-
-            @Override
-            public Elements doInBackground(String... params) {
-
-                //コンテキストからURL引き継ぎ
-                Intent intent = parentActivity.getIntent();
-                String url = intent.getStringExtra("menuUrl"); //URL
-                String select = ".body tr"; //select tag
-
-                try {
-                    Document doc = Jsoup.connect(url).get();
-                    Elements data = doc.select(select);
-                    return data;
-                } catch (Exception e) {
-                    return null;
-                }
-            }
-
-            public void onPostExecute(Elements result) {
-
-                if (result==null) {
-                    new AlertDialog.Builder(parentActivity)
-                            .setTitle(R.string.error_title_data_response)
-                            .setMessage(R.string.error_message_response_refuse)
-                            .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    //okボタンが押された時の処理
-                                    parentActivity.finish();
-                                }
-                            })
-                            .show();
-                }else {
-
-                    int page = getArguments().getInt("page", 0);
-
-                    ListView listview = (ListView) _view.findViewById(R.id.listView);
-
-                    List<SectionHeaderData> sectionList = new ArrayList<SectionHeaderData>();
-                    List<List<SectionRowData>> rowList = new ArrayList<List<SectionRowData>>();
-
-                    try {
-
-                        String[] places = new String[result.get(2).select("td").size() - 2];
-                        String[] times = getResources().getStringArray(R.array.time_separate);
-
-                        int k = 0, l = 0;
-                        for (int i = 1; i < result.get(0).select("td").size(); i++) {
-                            Element td = result.get(0).select("td").get(i);
-                            for (int j = 0; j < (td.attr("colspan").equals("") ? 1 : Integer.parseInt(td.attr("colspan"))); j++) {
-                                if (td.attr("rowspan").equals(""))
-                                    places[l++] = td.text() + "_" + result.get(1).select("td").get(k++).text();
-                                else places[l++] = td.text();
-                            }
-                        }
-                        for (int i = 0; i < places.length; i++) {
-                            places[i] = places[i].replaceAll("_", " "); //_を空白にする
-                            places[i] = places[i].replaceAll("　", " "); //全角空白を半角空白にする
-                            places[i] = StringUtil.fullWidthNumberToHalfWidthNumber(places[i]); //全角数字を半角数字に変換する
-                        }
-
-                        int point = page * 5 + 2; //trタグの位置
-                        for (int i = 0; i < times.length; i++) { //1から5コマのループ
-                            sectionList.add(new SectionHeaderData((i * 2 + 1) + "." + (i * 2 + 2) + "限 (" + (i + 1) + "コマ)", times[i]));
-                            List<SectionRowData> sectionDatalist = new ArrayList<SectionRowData>();
-                            Elements tdData = result.get(point + i).select("td");
-                            for (int pn = 0; pn < places.length; pn++) { //場所のループ
-                                String text = tdData.get(i == 0 ? pn + 2 : pn + 1).text(); //一番最初は曜日名が入るので一つずらす
-
-                                String color = "#000000";
-                                if (text.equals(String.valueOf('\u00A0')) || text.equals("") || text.equals("¥n")) { //"",&nbsp;改行のみ
-                                    text = "";
-                                } else {
-                                    String style = tdData.get(i == 0 ? pn + 2 : pn + 1).select("span").attr("style");
-                                    int m = style.indexOf("#");
-                                    if (m >= 0) color = style.substring(m, m + 7);
-                                }
-                                sectionDatalist.add(new SectionRowData(text, places[pn], color));
-                            }
-                            rowList.add(sectionDatalist);
-                        }
-
-                        CustomSectionListAdapter adapter = new CustomSectionListAdapter(parentActivity, sectionList, rowList);
-                        listview.setAdapter(adapter);
-
-                        //listview.setOnItemClickListener(new MainActivity.ListItemClickListener());
-
-                    } catch (Exception e) {
-                        new AlertDialog.Builder(parentActivity)
-                                .setTitle(R.string.error_title_data_response)
-                                .setMessage(R.string.error_message_data_invalid)
-                                .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        //okボタンが押された時の処理
-                                        parentActivity.finish();
-                                    }
-                                })
-                                .show();
-                    }
-                }
-
-            }
         }
 
         public class CustomSectionListAdapter extends BaseSectionAdapter<SectionHeaderData, SectionRowData> {

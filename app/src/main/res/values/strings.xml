@@ -33,9 +33,10 @@
     <string name="syllabus_weekday">曜日</string>
     <string name="syllabus_time">時限</string>
 
-    <!--シラバス検索の結果が0件の時のダイアログ-->
+    <!--ダイアログのメッセージ-->
     <string name="dialog_title_search_result">検索結果</string>
-    <string name="dialog_message_search_result">入力条件に該当するシラバスが存在しません</string>
+    <string name="dialog_message_search_result_syllabus">入力条件に該当するシラバスが存在しません</string>
+    <string name="dialog_message_search_result_place">入力条件に該当するデータが存在しません</string>
 
     <!--エラー時のメッセージ-->
     <string name="error_title_data_response">取得失敗</string>
@@ -87,7 +88,14 @@
     </string-array>
 
     <!--講義の時間(１コマ〜５コマ)-->
-    <string-array name="time_separate">
+    <string-array name="time_period">
+        <item> 1.2限 (1コマ)</item>
+        <item> 3.4限 (2コマ)</item>
+        <item> 5.6限 (3コマ)</item>
+        <item> 7.8限 (4コマ)</item>
+        <item>9.10限 (5コマ)</item>
+    </string-array>
+    <string-array name="time_period_m">
         <item> 8:30〜10:00</item>
         <item>10:15〜11:45</item>
         <item>12:45〜14:15</item>

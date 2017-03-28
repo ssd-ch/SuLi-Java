@@ -16,6 +16,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -102,23 +103,21 @@ public class MainActivity extends AppCompatActivity {
                     Elements urlList = doc.select(select);
                     tableData = new Elements[urlList.size()];
                     int i = 0;
+                    String[] column = {"_id", "building_name"};
+                    String[][] value = new String[urlList.size()][column.length];
                     for (Element element : urlList) {
                         try {
-                            String name = element.text().replace("教室配当表_", "").replaceAll("_", " ");
-                            String URL = element.attr("abs:href");
-
-                            //DBへの登録
-                            String[] column = {"_id", "building_name"};
-                            String[] value = { String.valueOf(i), name};
-                            dbAdapter.saveDB("Building", column, value);
-
-                            tableData[i] = Jsoup.connect(URL).get().select(".body tr");
+                            value[i][0] = String.valueOf(i);
+                            value[i][1] = element.text().replace("教室配当表_", "").replaceAll("_", " ");
+                            tableData[i] = Jsoup.connect(element.attr("abs:href")).get().select(".body tr");
                         } catch (Exception e) {
                             tableData[i] = null;
                         } finally {
                             i++;
                         }
                     }
+                    //DBへの登録
+                    dbAdapter.saveDB("Building", column, value);
 
                 } catch (Exception e) {
                     tableData = null;
@@ -156,6 +155,16 @@ public class MainActivity extends AppCompatActivity {
                     dbAdapter.openDB();
                     dbAdapter.allDelete("ClassroomDivide");
 
+                    int placeCount = 0;
+                    for (Elements elements : tableData){
+                        if (elements != null)
+                            placeCount += elements.get(2).select("td").size()-2;
+                    }
+
+                    String[] column = {"_id","building_id","place","weekday","time","cell_text","cell_color"};
+                    String[][] value = new String[placeCount*25][];
+                    int value_count = 0;
+
                     for(int d = 0; d < 5; d++) { //月から金のループ
                         int point = d * 5 + 2; //trタグの位置
                         for (int i = 0; i < 5; i++) { //1から5コマのループ
@@ -192,17 +201,16 @@ public class MainActivity extends AppCompatActivity {
                                             int m = style.indexOf("#");
                                             if (m >= 0) color = style.substring(m, m + 7);
                                         }
+                                        String id = ""+(building_id<10?"0"+building_id:building_id)+(pn<10?"0"+pn:pn)+d+i;
                                         //DBへの登録
-                                        String[] column = {"_id","building_id","place","weekday","time","cell_text","cell_color"};
-                                        String[] value = {"", String.valueOf(building_id++),places[pn],String.valueOf(d),String.valueOf(i),text,color};
-                                        dbAdapter.saveDB("ClassroomDivide", column, value);
+                                        value[value_count++] = new String[]{id, String.valueOf(building_id),places[pn],String.valueOf(d),String.valueOf(i),text,color};
                                     }
                                 }
+                                building_id++;
                             }
-
                         }
                     }
-
+                    dbAdapter.saveDB("ClassroomDivide", column, value);
 
                 } catch (Exception e) {
                     new AlertDialog.Builder(parentActivity)
