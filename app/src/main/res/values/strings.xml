@@ -37,6 +37,7 @@
     <string name="dialog_title_search_result">検索結果</string>
     <string name="dialog_message_search_result_syllabus">入力条件に該当するシラバスが存在しません</string>
     <string name="dialog_message_search_result_place">入力条件に該当するデータが存在しません</string>
+    <string name="dialog_message_search_result_notExists">該当データが存在しません</string>
 
     <!--エラー時のメッセージ-->
     <string name="error_title_data_response">取得失敗</string>
@@ -89,11 +90,13 @@
 
     <!--講義の時間(１コマ〜５コマ)-->
     <string-array name="time_period">
-        <item> 1.2限 (1コマ)</item>
-        <item> 3.4限 (2コマ)</item>
-        <item> 5.6限 (3コマ)</item>
-        <item> 7.8限 (4コマ)</item>
+        <item>1.2限 (1コマ)</item>
+        <item>3.4限 (2コマ)</item>
+        <item>5.6限 (3コマ)</item>
+        <item>7.8限 (4コマ)</item>
         <item>9.10限 (5コマ)</item>
+        <item>11.12限 (6コマ)</item>
+        <item>13.14限 (7コマ)</item>
     </string-array>
     <string-array name="time_period_m">
         <item> 8:30〜10:00</item>
@@ -101,6 +104,8 @@
         <item>12:45〜14:15</item>
         <item>14:30〜16:00</item>
         <item>16:15〜17:45</item>
+        <item>18:00〜19:30</item>
+        <item>19:45〜21:15</item>
     </string-array>
 
     <!--メッセージ-->

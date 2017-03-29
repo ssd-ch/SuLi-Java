@@ -124,21 +124,39 @@ public class ClassroomListActivity extends AppCompatActivity implements ViewPage
                 String[] times = getResources().getStringArray(R.array.time_period); //コマ
                 String[] times_m = getResources().getStringArray(R.array.time_period_m); //時間（時、分）
 
-                for (int i = 0; i < times.length; i++) { //1から5コマのループ
-                    Cursor cursor = dbAdapter.searchDB("ClassroomDivide", null,
-                            "building_id = ? and weekday = ? and time = ?", new String[]{id,String.valueOf(page),String.valueOf(i)});
-                    cursor.moveToFirst();
-                    int col_place = cursor.getColumnIndex("place");
-                    int col_text = cursor.getColumnIndex("cell_text");
-                    int col_color = cursor.getColumnIndex("cell_color");
+                Boolean DataExists = false; //データが存在するかどうかのフラグ　ない場合はアクティビティ終了
 
-                    sectionList.add(new SectionHeaderData(times[i], times_m[i]));
-                    List<SectionRowData> sectionDataList = new ArrayList<SectionRowData>();
-                    do { //部屋のループ
-                        sectionDataList.add(new SectionRowData(cursor.getString(col_text), cursor.getString(col_place), cursor.getString(col_color)));
-                    } while (cursor.moveToNext());
-                    rowList.add(sectionDataList);
+                for (int i = 0; i < times.length; i++) { //1から7コマのループ
+                    Cursor cursor = dbAdapter.searchDB("ClassroomDivide", null,
+                            "building_id = ? and weekday = ? and time = ?", new String[]{id,String.valueOf(page),String.valueOf(i+1)});
+                    if(cursor.moveToFirst()) {
+                        DataExists = true;
+
+                        int col_place = cursor.getColumnIndex("place");
+                        int col_text = cursor.getColumnIndex("cell_text");
+                        int col_color = cursor.getColumnIndex("cell_color");
+
+                        sectionList.add(new SectionHeaderData(times[i], times_m[i]));
+                        List<SectionRowData> sectionDataList = new ArrayList<SectionRowData>();
+                        do { //部屋のループ
+                            sectionDataList.add(new SectionRowData(cursor.getString(col_text), cursor.getString(col_place), cursor.getString(col_color)));
+                        } while (cursor.moveToNext());
+                        rowList.add(sectionDataList);
+                    }
                     cursor.close();
+                }
+
+                if(!DataExists){ //データが存在しなかった場合
+                    new AlertDialog.Builder(parentActivity)
+                            .setTitle(intent.getStringExtra("building_name"))
+                            .setMessage(R.string.dialog_message_search_result_notExists)
+                            .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //okボタンが押された時の処理
+                                    parentActivity.finish();
+                                }
+                            })
+                            .show();
                 }
 
                 CustomSectionListAdapter adapter = new CustomSectionListAdapter( parentActivity, sectionList, rowList);

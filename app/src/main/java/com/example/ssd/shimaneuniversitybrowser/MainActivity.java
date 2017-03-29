@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -129,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
 
+        @Override
         public void onPostExecute(Void none) {
 
             // プログレスダイアログを閉じる
@@ -156,13 +158,25 @@ public class MainActivity extends AppCompatActivity {
                     dbAdapter.allDelete("ClassroomDivide");
 
                     int placeCount = 0;
+                    int otherCount = 0;
                     for (Elements elements : tableData){
-                        if (elements != null)
-                            placeCount += elements.get(2).select("td").size()-2;
+                        if (elements != null) {
+                            //本データ
+                            placeCount += elements.get(2).select("td").size() - 2;
+                            //その他のデータ(下にある小さい表)
+                            if(elements.size() > 27){
+                                for (int i = 27; i < elements.size(); i++){
+                                    String[] tdText = {elements.get(i).select("td").get(0).text(),elements.get(i).select("td").get(1).text()};
+                                    if(!(tdText[0].equals(String.valueOf('\u00A0'))&&tdText[1].equals(String.valueOf('\u00A0')))){
+                                        otherCount++;
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     String[] column = {"_id","building_id","place","weekday","time","cell_text","cell_color"};
-                    String[][] value = new String[placeCount*25][];
+                    String[][] value = new String[placeCount*25+otherCount][];
                     int value_count = 0;
 
                     for(int d = 0; d < 5; d++) { //月から金のループ
@@ -194,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
                                         String text = tdData.get(i == 0 ? pn + 2 : pn + 1).text(); //一番最初は曜日名が入るので一つずらす
 
                                         String color = "#000000";
-                                        if (text.equals(String.valueOf('\u00A0')) || text.equals("") || text.equals("¥n")) { //"",&nbsp;改行のみ
+                                        if (text.equals(String.valueOf('\u00A0')) || text.equals("") || text.equals("¥n")) { //&nbsp;,"",改行のみ
                                             text = "";
                                         } else {
                                             String style = tdData.get(i == 0 ? pn + 2 : pn + 1).select("span").attr("style");
@@ -202,14 +216,64 @@ public class MainActivity extends AppCompatActivity {
                                             if (m >= 0) color = style.substring(m, m + 7);
                                         }
                                         String id = ""+(building_id<10?"0"+building_id:building_id)+(pn<10?"0"+pn:pn)+d+i;
+
                                         //DBへの登録
-                                        value[value_count++] = new String[]{id, String.valueOf(building_id),places[pn],String.valueOf(d),String.valueOf(i),text,color};
+                                        value[value_count++] = new String[]{id,String.valueOf(building_id),places[pn],String.valueOf(d),String.valueOf(i+1),text,color};
                                     }
                                 }
                                 building_id++;
                             }
                         }
                     }
+
+                    for (int building_id = 0; building_id < tableData.length; building_id++) { //建物のループ
+                        if(tableData[building_id] != null) {
+                            if (tableData[building_id].size() > 27) {
+                                String place_text = new String();
+                                String day_cache = new String();
+                                int pn = tableData[building_id].get(2).select("td").size() - 2;
+
+                                for (int i = 27; i < tableData[building_id].size(); i++) {
+                                    String[] tdText = {
+                                            tableData[building_id].get(i).select("td").get(0).text(),
+                                            tableData[building_id].get(i).select("td").get(1).text(),
+                                            tableData[building_id].get(i).select("td").get(2).text()};
+                                    if (tdText[0].equals(String.valueOf('\u00A0')) && tdText[1].equals(String.valueOf('\u00A0'))) {
+                                        place_text = StringUtil.fullWidthNumberToHalfWidthNumber(tdText[2].replaceAll("　",""));
+                                    } else {
+                                        tdText[0] = tdText[0].replaceAll("[ 　"+String.valueOf('\u00A0')+"]", "");//全角半角&nbspスペースの排除
+                                        tdText[1] = tdText[1].replaceAll("[ 　"+String.valueOf('\u00A0')+"]", "");//全角半角&nbspスペースの排除
+                                        if (tdText[0].equals("")) tdText[0] = day_cache;
+                                        day_cache = tdText[0];
+                                        int day;
+                                        switch (tdText[0]) {
+                                            case "月":
+                                                day = 0; break;
+                                            case "火":
+                                                day = 1; break;
+                                            case "水":
+                                                day = 2; break;
+                                            case "木":
+                                                day = 3; break;
+                                            case "金":
+                                                day = 4; break;
+                                            case "土":
+                                                day = 5; break;
+                                            case "日":
+                                                day = 6; break;
+                                            default:
+                                                day = 99; //unknown
+                                        }
+                                        int time = Integer.valueOf(tdText[1].substring(tdText[1].indexOf(".")+1)) / 2;//コマを格納
+                                        String id = "" + (building_id < 10 ? "0" + building_id : building_id) + (pn < 10 ? "0" + pn : pn) + day + time;
+                                        pn++;
+                                        value[value_count++] = new String[]{id, String.valueOf(building_id), place_text, String.valueOf(day), String.valueOf(time), tdText[2], "#000000"};
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     dbAdapter.saveDB("ClassroomDivide", column, value);
 
                 } catch (Exception e) {
@@ -230,5 +294,24 @@ public class MainActivity extends AppCompatActivity {
             }
 
         }
+    }
+
+
+    /**
+     * 授業情報のテーブルのセルのテキストから授業情報を抽出する
+     *
+     * @param text セルのテキスト
+     * @return result String[4] (授業名、担当者名、担当者の所属、時間割コード)
+     */
+    private String[] ExtractionLecture(String text){
+
+        String[] result = new String[4];
+
+        //授業名
+        if(text.matches(""))
+            result[0] = text.substring(text.indexOf("『")+1,text.indexOf("』"));
+        //授業担当者名
+
+        return result;
     }
 }

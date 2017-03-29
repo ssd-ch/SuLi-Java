@@ -35,11 +35,11 @@ public class PlacesSearchResultActivity extends AppCompatActivity {
         setTitle(R.string.title_places_search_result);
 
         Intent intent = getIntent();
-        String weekday = intent.getStringExtra("data2"); //曜日　-1:指定なし 0〜4:月〜金
-        String time = intent.getStringExtra("data3"); //コマ　-1:指定なし 0〜4:1〜5コマ
+        String weekday = intent.getStringExtra("data2"); //曜日 -1:指定なし 0〜4:月〜金
+        String time = intent.getStringExtra("data3");    //コマ　0:指定なし 1〜7:1〜7コマ
 
         if(weekday.equals("-1")) weekday = "%";
-        if(time.equals("-1")) time = "%";
+        if(time.equals("0")) time = "%";
 
         ListView listView = (ListView) findViewById(R.id.listView);
 
@@ -56,10 +56,12 @@ public class PlacesSearchResultActivity extends AppCompatActivity {
             int col_text = cursor.getColumnIndex("cell_text");
 
             do {
-                Map<String, String> data = new HashMap<String, String>();
-                data.put("place",cursor.getString(col_place));
-                data.put("text",cursor.getString(col_text));
-                dataList.add(data);
+                if(!cursor.getString(col_text).equals("")) {
+                    Map<String, String> data = new HashMap<String, String>();
+                    data.put("place", cursor.getString(col_place));
+                    data.put("text", cursor.getString(col_text));
+                    dataList.add(data);
+                }
             } while (cursor.moveToNext());
             cursor.close();
 

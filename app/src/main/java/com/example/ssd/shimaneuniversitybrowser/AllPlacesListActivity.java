@@ -119,18 +119,19 @@ public class AllPlacesListActivity extends AppCompatActivity implements ViewPage
 
                 for (int i = 0; i < times.length; i++) { //1から5コマのループ
                     Cursor cursor = dbAdapter.searchDB("ClassroomDivide", null,
-                            "weekday = ? and time = ?", new String[]{String.valueOf(page),String.valueOf(i)});
-                    cursor.moveToFirst();
-                    int col_place = cursor.getColumnIndex("place");
-                    int col_text = cursor.getColumnIndex("cell_text");
-                    int col_color = cursor.getColumnIndex("cell_color");
+                            "weekday = ? and time = ?", new String[]{String.valueOf(page),String.valueOf(i+1)});
+                    if(cursor.moveToFirst()) {
+                        int col_place = cursor.getColumnIndex("place");
+                        int col_text = cursor.getColumnIndex("cell_text");
+                        int col_color = cursor.getColumnIndex("cell_color");
 
-                    sectionList.add(new SectionHeaderData(times[i], times_m[i]));
-                    List<SectionRowData> sectionDataList = new ArrayList<SectionRowData>();
-                    do { //部屋のループ
-                        sectionDataList.add(new SectionRowData(cursor.getString(col_text), cursor.getString(col_place), cursor.getString(col_color)));
-                    } while (cursor.moveToNext());
-                    rowList.add(sectionDataList);
+                        sectionList.add(new SectionHeaderData(times[i], times_m[i]));
+                        List<SectionRowData> sectionDataList = new ArrayList<SectionRowData>();
+                        do { //部屋のループ
+                            sectionDataList.add(new SectionRowData(cursor.getString(col_text), cursor.getString(col_place), cursor.getString(col_color)));
+                        } while (cursor.moveToNext());
+                        rowList.add(sectionDataList);
+                    }
                     cursor.close();
                 }
 

@@ -32,8 +32,8 @@ public class PlacesSearchFormActivity extends AppCompatActivity {
                 Intent intent = new Intent(PlacesSearchFormActivity.this, PlacesSearchResultActivity.class);
                 intent.putExtra("data0", edittext1.getText().toString());
                 intent.putExtra("data1", edittext2.getText().toString());
-                intent.putExtra("data2", String.valueOf(spinner3.getSelectedItemPosition()-1));
-                intent.putExtra("data3", String.valueOf(spinner4.getSelectedItemPosition()-1));
+                intent.putExtra("data2", String.valueOf(spinner3.getSelectedItemPosition()-1)); //-1を指定なし,0〜4を曜日として渡す
+                intent.putExtra("data3", String.valueOf(spinner4.getSelectedItemPosition()));
                 startActivity(intent);
             }
         });
