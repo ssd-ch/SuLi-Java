@@ -35,9 +35,13 @@ public class PlacesSearchResultActivity extends AppCompatActivity {
         setTitle(R.string.title_places_search_result);
 
         Intent intent = getIntent();
+        String classname = intent.getStringExtra("data0"); //授業名
+        String person = intent.getStringExtra("data1");    //担当者
         String weekday = intent.getStringExtra("data2"); //曜日 -1:指定なし 0〜4:月〜金
         String time = intent.getStringExtra("data3");    //コマ　0:指定なし 1〜7:1〜7コマ
 
+        classname = "%"+classname+"%";
+        person = "%"+person+"%";
         if(weekday.equals("-1")) weekday = "%";
         if(time.equals("0")) time = "%";
 
@@ -46,7 +50,7 @@ public class PlacesSearchResultActivity extends AppCompatActivity {
         DBAdapter dbAdapter = new DBAdapter(this);
         dbAdapter.openDB();
         Cursor cursor = dbAdapter.searchDB("ClassroomDivide", null,
-                "weekday like ? and time like ?", new String[]{weekday,time});
+                "classname like ? and person like ? and weekday like ? and time like ?", new String[]{classname,person,weekday,time});
 
         if (cursor.moveToFirst()) {
 

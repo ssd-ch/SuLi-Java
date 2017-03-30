@@ -67,12 +67,11 @@ public class DBAdapter {
     public void saveDB( String table, String[] column, String[][] value) {
 
         db.beginTransaction();          // トランザクション開始
-
         try {
             for (int i = 0; i < value.length; i++) {
                 ContentValues values = new ContentValues();     // ContentValuesでデータを設定していく
                 for (int j = 0; j < column.length; j++) {
-                        values.put(column[j], value[i][j]);
+                    values.put(column[j], value[i][j]);
                 }
                 // insertメソッド データ登録
                 // 第1引数：DBのテーブル名

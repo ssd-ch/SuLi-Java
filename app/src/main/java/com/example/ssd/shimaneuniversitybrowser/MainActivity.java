@@ -175,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
 
-                    String[] column = {"_id","building_id","place","weekday","time","cell_text","cell_color"};
+                    String[] column = {"_id","building_id","place","weekday","time","cell_text","cell_color","classname","person","department","class_code"};
                     String[][] value = new String[placeCount*25+otherCount][];
                     int value_count = 0;
 
@@ -207,18 +207,26 @@ public class MainActivity extends AppCompatActivity {
                                     for (int pn = 0; pn < places.length; pn++) { //場所のループ
                                         String text = tdData.get(i == 0 ? pn + 2 : pn + 1).text(); //一番最初は曜日名が入るので一つずらす
 
+                                        String[] L_Info = new String[4];
+
                                         String color = "#000000";
                                         if (text.equals(String.valueOf('\u00A0')) || text.equals("") || text.equals("¥n")) { //&nbsp;,"",改行のみ
                                             text = "";
                                         } else {
                                             String style = tdData.get(i == 0 ? pn + 2 : pn + 1).select("span").attr("style");
                                             int m = style.indexOf("#");
-                                            if (m >= 0) color = style.substring(m, m + 7);
+                                            if (m >= 0) {
+                                                color = style.substring(m, m + 7);
+                                                L_Info = new String[]{"","","",""};
+                                            }
+                                            else{
+                                                L_Info = ExtractionLecture(text);
+                                            }
                                         }
                                         String id = ""+(building_id<10?"0"+building_id:building_id)+(pn<10?"0"+pn:pn)+d+i;
 
                                         //DBへの登録
-                                        value[value_count++] = new String[]{id,String.valueOf(building_id),places[pn],String.valueOf(d),String.valueOf(i+1),text,color};
+                                        value[value_count++] = new String[]{id,String.valueOf(building_id),places[pn],String.valueOf(d),String.valueOf(i+1),text,color,L_Info[0],L_Info[1],L_Info[2],L_Info[3]};
                                     }
                                 }
                                 building_id++;
@@ -267,7 +275,9 @@ public class MainActivity extends AppCompatActivity {
                                         int time = Integer.valueOf(tdText[1].substring(tdText[1].indexOf(".")+1)) / 2;//コマを格納
                                         String id = "" + (building_id < 10 ? "0" + building_id : building_id) + (pn < 10 ? "0" + pn : pn) + day + time;
                                         pn++;
-                                        value[value_count++] = new String[]{id, String.valueOf(building_id), place_text, String.valueOf(day), String.valueOf(time), tdText[2], "#000000"};
+
+                                        String[] L_Info = ExtractionLecture(tdText[2]);
+                                        value[value_count++] = new String[]{id,String.valueOf(building_id),place_text,String.valueOf(day),String.valueOf(time),tdText[2],"#000000",L_Info[0],L_Info[1],L_Info[2],L_Info[3]};
                                     }
                                 }
                             }
@@ -305,12 +315,34 @@ public class MainActivity extends AppCompatActivity {
      */
     private String[] ExtractionLecture(String text){
 
-        String[] result = new String[4];
+        String[] result = {"","","",""};
+
+        final String d_code = "ＬＳＥＨＭＳＡＦＣ○*";
+
+        text = text.replaceAll("、"," ");
 
         //授業名
-        if(text.matches(""))
-            result[0] = text.substring(text.indexOf("『")+1,text.indexOf("』"));
-        //授業担当者名
+        if(text.matches(".*『.*』.*")){
+            result[0] = StringUtil.matcherSubString(text,"『.*』").replaceAll("[『』]", "");
+            text = text.replaceAll("『.*』", "");
+        }
+        //時間割コード
+        if(text.matches(".*[A-Z0-9]{6}.*")){
+            result[3] = StringUtil.matcherSubString(text,"[A-Z0-9]{6,}");
+            text = text.replaceAll("[A-Z0-9/]{6,}", "");
+        }
+        //担当者情報
+        if(text.matches(".*["+d_code+"].*")){
+            String t = StringUtil.matcherSubString(text,"["+d_code+"]{1,2}[^"+d_code+"]*");
+            result[2] = StringUtil.matcherSubString(t,"["+d_code+"]{1,2}");
+            result[1] = t.replaceAll("["+d_code+"]", "");
+        }
+
+        for(int i = 0; i < result.length; i++){
+            result[i] = result[i].replaceAll("[　 ]","");
+        }
+
+        //Log.d("DEBUG","授業名:"+result[0]+" 時間割コード:"+result[3]+" 担当者名:"+result[1]+" 担当者所属:"+result[2]);
 
         return result;
     }

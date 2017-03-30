@@ -1,5 +1,8 @@
 package com.example.ssd.shimaneuniversitybrowser;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class StringUtil {
 
     /**
@@ -58,5 +61,28 @@ public class StringUtil {
         str = str.replaceAll("  *", " ");
 
         return str;
+    }
+
+
+    /**
+     *
+     * @param s 検索が行われる文字列
+     * @param regex　検索を行う正規表現
+     * @return 文字列に一致した部分文字列（複数一致した場合はsplitで区切る）
+     */
+    public static String matcherSubString(String s,String regex){
+
+        final String split = ",";
+        String result = new String();
+
+        Pattern p = Pattern.compile(regex);
+        Matcher m = p.matcher(s);
+
+        int i = 0;
+        while(m.find()){
+            result = result.concat((i++>0?split:"")+m.group());
+        }
+
+        return result;
     }
 }
