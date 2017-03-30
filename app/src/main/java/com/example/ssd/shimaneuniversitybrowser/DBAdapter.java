@@ -13,7 +13,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DBAdapter {
 
     private final static String DB_NAME = "shimane_university.db";      // DBファイル名
-    private final static int DB_VERSION = 1;                // DBのバージョン
+    private final static int DB_VERSION = 2;                // DBのバージョン
 
     private SQLiteDatabase db = null;           // SQLiteDatabase
     private DBHelper dbHelper = null;           // DBHelper
@@ -209,6 +209,13 @@ public class DBAdapter {
                     "CREATE TABLE Building ("
                             + "_id INTEGER PRIMARY KEY NOT NULL, "
                             + "building_name TEXT);" );
+            db.execSQL(
+                    "CREATE TABLE SyllabusForm ("
+                            + "_id INTEGER NOT NULL, "
+                            + "form TEXT NOT NULL, "
+                            + "display TEXT, "
+                            + "value TEXT, "
+                            + "PRIMARY KEY( _id, form) );" );
         }
 
         /**
@@ -223,6 +230,7 @@ public class DBAdapter {
             // DBからテーブル削除
             db.execSQL("DROP TABLE IF EXISTS ClassroomDivide");
             db.execSQL("DROP TABLE IF EXISTS Building");
+            db.execSQL("DROP TABLE IF EXISTS SyllabusForm");
             // テーブル生成
             onCreate(db);
         }

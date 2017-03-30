@@ -90,8 +90,8 @@ public class MainActivity extends AppCompatActivity {
             if(tableData == null) { //データが取得されていない
 
                 //読み込みページ一覧を取得
-                String url = "http://www.shimane-u.ac.jp/education/school_info/class_data/class_data01.html";
-                String select = ".body li a"; //select tag
+                String BuildingUrl = "http://www.shimane-u.ac.jp/education/school_info/class_data/class_data01.html";
+                String SyllabusFormUrl = "http://gakumuweb1.shimane-u.ac.jp/shinwa/SYOutsideReferSearchInput";
 
                 //DBを開く
                 dbAdapter.openDB();
@@ -100,8 +100,9 @@ public class MainActivity extends AppCompatActivity {
                 //一覧のそれぞれの情報を取得
                 try {
 
-                    Document doc = Jsoup.connect(url).get();
-                    Elements urlList = doc.select(select);
+                    //教室配当表のダウンロードと建物の登録
+                    Document doc = Jsoup.connect(BuildingUrl).get();
+                    Elements urlList = doc.select(".body li a");
                     tableData = new Elements[urlList.size()];
                     int i = 0;
                     String[] column = {"_id", "building_name"};
@@ -117,8 +118,40 @@ public class MainActivity extends AppCompatActivity {
                             i++;
                         }
                     }
-                    //DBへの登録
                     dbAdapter.saveDB("Building", column, value);
+
+
+                    /*
+                        シラバスの検索フォームのダウンロード、登録
+                     */
+                    Document doc2 = Jsoup.connect(SyllabusFormUrl).get();
+                    Elements FormData = doc2.select("table");
+
+                    String year = FormData.select("[name=nendo]").attr("value"); //年度
+                    Elements options1 = FormData.select("[name=j_s_cd] option"); //学部
+                    Elements options2 = FormData.select("[name=kamokud_cd] option"); //科目分類
+                    Elements options3 = FormData.select("[name=yobi] option"); //曜日
+                    Elements options4 = FormData.select("[name=jigen] option"); //時限
+
+                    String[] column2 = {"_id", "form","display","value"};
+                    String[][] value2 = new String[1+options1.size()+options2.size()+options3.size()+options4.size()][column2.length];
+                    int value2_cnt = 0;
+
+                    value2[value2_cnt++] = new String[]{"0", "nendo", year, year};
+
+                    for (int k = 0; k < options1.size(); k++)
+                        value2[value2_cnt++] = new String[]{String.valueOf(k),"j_s_cd",options1.get(k).text(),options1.get(k).attr("value")};
+
+                    for (int k = 0; k < options2.size(); k++)
+                        value2[value2_cnt++] = new String[]{String.valueOf(k),"kamokud_cd",options2.get(k).text(),options2.get(k).attr("value")};
+
+                    for (int k = 0; k < options3.size(); k++)
+                        value2[value2_cnt++] = new String[]{String.valueOf(k),"yobi",options3.get(k).text(),options3.get(k).attr("value")};
+
+                    for (int k = 0; k < options4.size(); k++)
+                        value2[value2_cnt++] = new String[]{String.valueOf(k),"jigen",options4.get(k).text(),options4.get(k).attr("value")};
+
+                    dbAdapter.saveDB("SyllabusForm", column2, value2);
 
                 } catch (Exception e) {
                     tableData = null;
@@ -132,11 +165,6 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onPostExecute(Void none) {
-
-            // プログレスダイアログを閉じる
-            if (m_ProgressDialog != null && m_ProgressDialog.isShowing()) {
-                m_ProgressDialog.dismiss();
-            }
 
             if (tableData == null) {
                 new AlertDialog.Builder(parentActivity)
@@ -301,6 +329,11 @@ public class MainActivity extends AppCompatActivity {
                     //DBを閉じる
                     dbAdapter.closeDB();
                 }
+            }
+
+            // プログレスダイアログを閉じる
+            if (m_ProgressDialog != null && m_ProgressDialog.isShowing()) {
+                m_ProgressDialog.dismiss();
             }
 
         }

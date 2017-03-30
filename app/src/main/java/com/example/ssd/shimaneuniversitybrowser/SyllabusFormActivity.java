@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
+import android.database.Cursor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -12,10 +12,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
 
 public class SyllabusFormActivity extends AppCompatActivity {
 
@@ -26,179 +22,162 @@ public class SyllabusFormActivity extends AppCompatActivity {
 
         setTitle(R.string.title_syllabus_form);
 
-        //コンストラクタの引数に表示させるパーツを指定
-        SyllabusFormActivity.SearchFormReceiver receiver = new SyllabusFormActivity.SearchFormReceiver(this);
-        //非同期処理を行う
-        receiver.execute("http://gakumuweb1.shimane-u.ac.jp/shinwa/SYOutsideReferSearchInput");
-    }
+        try {
 
-    private class SearchFormReceiver extends AsyncTask<String, String, Elements> {
-        private Activity parent_activity;
+            DBAdapter dbAdapter = new DBAdapter(this);
+            dbAdapter.openDB();
 
-        public SearchFormReceiver(Activity activity){
-            parent_activity = activity ;
-        }
+            int display_index; //使い回す
+            int value_index; //使い回す
 
-        @Override
-        public Elements doInBackground(String... params) {
-            String url = params[0]; //URL
-            try {
-                Document doc = Jsoup.connect(url).get();
-                Elements data = doc.select("table");
-                return data;
-            } catch (Exception e) {
-                return null;
+            Cursor cursor0 = dbAdapter.searchDB("SyllabusForm", null, "form = ?", new String[]{"nendo"});
+            cursor0.moveToFirst();
+            final String year = cursor0.getString(cursor0.getColumnIndex("value"));
+            cursor0.close();
+
+            /*
+                学部の項目設定
+            */
+            Cursor cursor1 = dbAdapter.searchDB("SyllabusForm", null, "form = ?", new String[]{"j_s_cd"});
+            cursor1.moveToFirst();
+
+            display_index = cursor1.getColumnIndex("display");
+            value_index = cursor1.getColumnIndex("value");
+
+            final String[] departments = new String[cursor1.getCount()]; //表示するテキスト
+            final String[] values1 = new String[cursor1.getCount()]; //送信するvalueの値
+            for (int i = 0; i < cursor1.getCount(); i++) {
+                departments[i] = cursor1.getString(display_index);
+                values1[i] = cursor1.getString(value_index);
+                cursor1.moveToNext();
             }
-        }
 
-        public void onPostExecute(Elements result) {
+            Spinner form1 = (Spinner) this.findViewById(R.id.form1);
+            ArrayAdapter adapter1 = new ArrayAdapter(this, android.R.layout.simple_spinner_item, departments);
+            form1.setAdapter(adapter1);
+            adapter1.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            form1.setPromptId(R.string.syllabus_department);
 
-            if(result==null){
-                new AlertDialog.Builder(SyllabusFormActivity.this)
-                        .setTitle(R.string.error_title_data_response)
-                        .setMessage(R.string.error_message_response_refuse)
-                        .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener(){
-                            public void onClick(DialogInterface dialog, int which) {
-                                //okボタンが押された時の処理
-                                SyllabusFormActivity.this.finish();
-                            }
-                        })
-                        .show();
-            }else {
+            /*
+                科目分類の項目設定
+            */
+            Cursor cursor2 = dbAdapter.searchDB("SyllabusForm", null, "form = ?", new String[]{"kamokud_cd"});
+            cursor2.moveToFirst();
 
-                try {
+            display_index = cursor2.getColumnIndex("display");
+            value_index = cursor2.getColumnIndex("value");
 
-                    final String year = result.select("[name=nendo]").attr("value");
+            final String[] course = new String[cursor2.getCount()]; //表示するテキスト
+            final String[] values2 = new String[cursor2.getCount()]; //送信するvalueの値
+            for (int i = 0; i < cursor2.getCount(); i++) {
+                course[i] = cursor2.getString(display_index);
+                values2[i] = cursor2.getString(value_index);
+                cursor2.moveToNext();
+            }
 
-                    /*
-                        学部の項目設定
-                    */
-                    Elements options1 = result.select("[name=j_s_cd] option");
+            Spinner form2 = (Spinner) this.findViewById(R.id.form2);
+            ArrayAdapter adapter2 = new ArrayAdapter(this, android.R.layout.simple_spinner_item, course);
+            form2.setAdapter(adapter2);
+            adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            form2.setPromptId(R.string.syllabus_course);
 
-                    final String[] values1 = new String[options1.size()]; //学部のvalueの値
+            /*
+                曜日の項目設定
+            */
+            Cursor cursor3 = dbAdapter.searchDB("SyllabusForm", null, "form = ?", new String[]{"yobi"});
+            cursor3.moveToFirst();
 
-                    String[] departments = new String[options1.size()];
-                    for (int i = 0; i < options1.size(); i++) {
-                        departments[i] = options1.get(i).text();
-                        values1[i] = options1.get(i).attr("value");
-                    }
+            display_index = cursor3.getColumnIndex("display");
+            value_index = cursor3.getColumnIndex("value");
 
-                    Spinner form1 = (Spinner) parent_activity.findViewById(R.id.form1);
-                    ArrayAdapter adapter1 = new ArrayAdapter(parent_activity, android.R.layout.simple_spinner_item, departments);
-                    form1.setAdapter(adapter1);
-                    adapter1.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    form1.setPromptId(R.string.syllabus_department);
+            final String[] weekday = new String[cursor3.getCount()]; //表示するテキスト
+            final String[] values3 = new String[cursor3.getCount()]; //送信するvalueの値
+            for (int i = 0; i < cursor3.getCount(); i++) {
+                weekday[i] = cursor3.getString(display_index);
+                values3[i] = cursor3.getString(value_index);
+                cursor3.moveToNext();
+            }
 
-                    /*
-                        科目分類の項目設定
-                    */
-                    Elements options2 = result.select("[name=kamokud_cd] option");
+            Spinner form5 = (Spinner) this.findViewById(R.id.form5);
+            ArrayAdapter adapter3 = new ArrayAdapter(this, android.R.layout.simple_spinner_item, weekday);
+            form5.setAdapter(adapter3);
+            adapter3.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            form5.setPromptId(R.string.syllabus_weekday);
 
-                    final String[] values2 = new String[options2.size()]; //科目分類のvalueの値
+            /*
+                時限の項目設定
+            */
+            Cursor cursor4 = dbAdapter.searchDB("SyllabusForm", null, "form = ?", new String[]{"jigen"});
+            cursor4.moveToFirst();
 
-                    String[] course = new String[options2.size()];
-                    for (int i = 0; i < options2.size(); i++) {
-                        course[i] = options2.get(i).text();
-                        values2[i] = options2.get(i).attr("value");
-                    }
+            display_index = cursor4.getColumnIndex("display");
+            value_index = cursor4.getColumnIndex("value");
 
-                    Spinner form2 = (Spinner) parent_activity.findViewById(R.id.form2);
-                    ArrayAdapter adapter2 = new ArrayAdapter(parent_activity, android.R.layout.simple_spinner_item, course);
-                    form2.setAdapter(adapter2);
-                    adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    form2.setPromptId(R.string.syllabus_course);
+            final String[] times = new String[cursor4.getCount()]; //表示するテキスト
+            final String[] values4 = new String[cursor4.getCount()]; //送信するvalueの値
+            for (int i = 0; i < cursor4.getCount(); i++) {
+                times[i] = cursor4.getString(display_index);
+                values4[i] = cursor4.getString(value_index);
+                cursor4.moveToNext();
+            }
 
-                    /*
-                        曜日の項目設定
-                    */
-                    Elements options3 = result.select("[name=yobi] option");
+            Spinner form6 = (Spinner) this.findViewById(R.id.form6);
+            ArrayAdapter adapter4 = new ArrayAdapter(this, android.R.layout.simple_spinner_item, times);
+            form6.setAdapter(adapter4);
+            adapter4.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            form6.setPromptId(R.string.syllabus_time);
 
-                    final String[] values3 = new String[options3.size()]; //曜日のvalueの値
+            Button Button1 = (Button) this.findViewById(R.id.button_search);
+            Button Button2 = (Button) this.findViewById(R.id.button_clear);
+            Button1.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 
-                    String[] weekday = new String[options3.size()];
-                    for (int i = 0; i < options3.size(); i++) {
-                        weekday[i] = options3.get(i).text();
-                        values3[i] = options3.get(i).attr("value");
-                    }
+                    Spinner spinner1 = (Spinner) SyllabusFormActivity.this.findViewById(R.id.form1);
+                    Spinner spinner2 = (Spinner) SyllabusFormActivity.this.findViewById(R.id.form2);
+                    EditText edittext3 = (EditText) SyllabusFormActivity.this.findViewById(R.id.form3);
+                    EditText edittext4 = (EditText) SyllabusFormActivity.this.findViewById(R.id.form4);
+                    Spinner spinner7 = (Spinner) SyllabusFormActivity.this.findViewById(R.id.form5);
+                    Spinner spinner8 = (Spinner) SyllabusFormActivity.this.findViewById(R.id.form6);
 
-                    Spinner form5 = (Spinner) parent_activity.findViewById(R.id.form5);
-                    ArrayAdapter adapter3 = new ArrayAdapter(parent_activity, android.R.layout.simple_spinner_item, weekday);
-                    form5.setAdapter(adapter3);
-                    adapter3.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    form5.setPromptId(R.string.syllabus_weekday);
-
-                    /*
-                        時限の項目設定
-                    */
-                    Elements options4 = result.select("[name=jigen] option");
-
-                    final String[] values4 = new String[options4.size()]; //時限のvalueの値
-
-                    String[] times = new String[options4.size()];
-                    for (int i = 0; i < options4.size(); i++) {
-                        times[i] = options4.get(i).text();
-                        values4[i] = options4.get(i).attr("value");
-                    }
-
-                    Spinner form6 = (Spinner) parent_activity.findViewById(R.id.form6);
-                    ArrayAdapter adapter4 = new ArrayAdapter(parent_activity, android.R.layout.simple_spinner_item, times);
-                    form6.setAdapter(adapter4);
-                    adapter4.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    form6.setPromptId(R.string.syllabus_time);
-
-                    Button Button1 = (Button) parent_activity.findViewById(R.id.button_search);
-                    Button Button2 = (Button) parent_activity.findViewById(R.id.button_clear);
-                    Button1.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-
-                            Spinner spinner1 = (Spinner) parent_activity.findViewById(R.id.form1);
-                            Spinner spinner2 = (Spinner) parent_activity.findViewById(R.id.form2);
-                            EditText edittext3 = (EditText) parent_activity.findViewById(R.id.form3);
-                            EditText edittext4 = (EditText) parent_activity.findViewById(R.id.form4);
-                            Spinner spinner7 = (Spinner) parent_activity.findViewById(R.id.form5);
-                            Spinner spinner8 = (Spinner) parent_activity.findViewById(R.id.form6);
-
-                            Intent intent = new Intent(parent_activity, SyllabusSearchResultActivity.class);
-                            intent.putExtra("data0", year);
-                            intent.putExtra("data1", values1[spinner1.getSelectedItemPosition()]);
-                            intent.putExtra("data2", values2[spinner2.getSelectedItemPosition()]);
-                            intent.putExtra("data3", edittext3.getText().toString());
-                            intent.putExtra("data4", "");
-                            intent.putExtra("data5", "");
-                            intent.putExtra("data6", edittext4.getText().toString());
-                            intent.putExtra("data7", values3[spinner7.getSelectedItemPosition()]);
-                            intent.putExtra("data8", values4[spinner8.getSelectedItemPosition()]);
-                            intent.putExtra("data9", "100");
-                            startActivity(intent);
-                        }
-                    });
-                    Button2.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            ((Spinner) parent_activity.findViewById(R.id.form1)).setSelection(0);
-                            ((Spinner) parent_activity.findViewById(R.id.form2)).setSelection(0);
-                            ((EditText) parent_activity.findViewById(R.id.form3)).getEditableText().clear();
-                            ((EditText) parent_activity.findViewById(R.id.form4)).getEditableText().clear();
-                            ((Spinner) parent_activity.findViewById(R.id.form5)).setSelection(0);
-                            ((Spinner) parent_activity.findViewById(R.id.form6)).setSelection(0);
-                        }
-                    });
-
-                }catch(Exception e){
-                    new AlertDialog.Builder(SyllabusFormActivity.this)
-                            .setTitle(R.string.error_title_data_response)
-                            .setMessage(R.string.error_message_data_invalid)
-                            .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener(){
-                                public void onClick(DialogInterface dialog, int which) {
-                                    //okボタンが押された時の処理
-                                    SyllabusFormActivity.this.finish();
-                                }
-                            })
-                            .show();
+                    Intent intent = new Intent(SyllabusFormActivity.this, SyllabusSearchResultActivity.class);
+                    intent.putExtra("data0", year);
+                    intent.putExtra("data1", values1[spinner1.getSelectedItemPosition()]);
+                    intent.putExtra("data2", values2[spinner2.getSelectedItemPosition()]);
+                    intent.putExtra("data3", edittext3.getText().toString());
+                    intent.putExtra("data4", "");
+                    intent.putExtra("data5", "");
+                    intent.putExtra("data6", edittext4.getText().toString());
+                    intent.putExtra("data7", values3[spinner7.getSelectedItemPosition()]);
+                    intent.putExtra("data8", values4[spinner8.getSelectedItemPosition()]);
+                    intent.putExtra("data9", "100");
+                    startActivity(intent);
                 }
+            });
+            Button2.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    ((Spinner) SyllabusFormActivity.this.findViewById(R.id.form1)).setSelection(0);
+                    ((Spinner) SyllabusFormActivity.this.findViewById(R.id.form2)).setSelection(0);
+                    ((EditText) SyllabusFormActivity.this.findViewById(R.id.form3)).getEditableText().clear();
+                    ((EditText) SyllabusFormActivity.this.findViewById(R.id.form4)).getEditableText().clear();
+                    ((Spinner) SyllabusFormActivity.this.findViewById(R.id.form5)).setSelection(0);
+                    ((Spinner) SyllabusFormActivity.this.findViewById(R.id.form6)).setSelection(0);
+                }
+            });
 
-            }
+        }catch(Exception e){
+            new AlertDialog.Builder(SyllabusFormActivity.this)
+                    .setTitle(R.string.error_title_data_response)
+                    .setMessage(R.string.error_message_data_invalid)
+                    .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener(){
+                        public void onClick(DialogInterface dialog, int which) {
+                            //okボタンが押された時の処理
+                            SyllabusFormActivity.this.finish();
+                        }
+                    })
+                    .show();
         }
     }
+    
 }
