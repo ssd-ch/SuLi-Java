@@ -96,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
                 //DBを開く
                 dbAdapter.openDB();
                 dbAdapter.allDelete("Building");
+                dbAdapter.allDelete("SyllabusForm");
 
                 //一覧のそれぞれの情報を取得
                 try {

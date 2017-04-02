@@ -46,9 +46,15 @@
     <string name="error_message_input_invalid">入力したデータが不正です</string>
 
     <!--シラバス閲覧のリストビューのヘッダ-->
+    <string name="syllabus_place">講義場所</string>
     <string name="syllabus_basic">基本データ</string>
     <string name="syllabus_contents">講義内容</string>
     <string name="syllabus_teacher_list">担当教員一覧</string>
+
+    <!--シラバス閲覧の講義場所のテキスト-->
+    <string name="syllabus_place_message">※自動探索による値なので、正しい場所であるとは限りません</string>
+    <string name="syllabus_place_not_found">特定できませんでした</string>
+    <string name="syllabus_place_not_found_message">教室配当表を確認してください</string>
 
     <!--教室配当表の検索モード選択のボタン-->
     <string name="places_search_mode_all">全一覧から探す</string>

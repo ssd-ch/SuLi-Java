@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 /**
  * Databaseに関連するクラス
@@ -117,10 +118,12 @@ public class DBAdapter {
      * @param table String 取得するテーブル名
      * @param columns String[] 取得するカラム名 nullの場合は全カラムを取得
      * @param column  String 選択条件に使うカラム名
-     * @param name    String[]
+     * @param name    String[] 選択条件の?の値
      * @return DBの検索したデータ
      */
     public Cursor searchDB(String table, String[] columns, String column, String[] name) {
+        if(name.length>=3&&table.equals("ClassroomDivide"))
+            Log.d("DEBUG",name[0]+" "+name[1]+" "+name[2]);
         return db.query( table, columns, column, name, null, null, "_id ASC");
     }
 

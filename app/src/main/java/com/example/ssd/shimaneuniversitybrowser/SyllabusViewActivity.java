@@ -5,9 +5,11 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -111,6 +113,63 @@ public class SyllabusViewActivity extends AppCompatActivity {
                 }
                 rowList.add(sectionDatalist3);
 
+                //講義場所
+                DBAdapter dbAdapter = new DBAdapter(parent_activity);
+                dbAdapter.openDB();
+
+                String where = "person like ? and ";
+                String where_value;
+
+                String day;
+                where = where.concat("( weekday like ? and time like ? ) ");
+                switch (StringUtil.matcherSubString(tdData.get(7).text(),"[月火水木金土日]+")) {
+                    case "月":
+                        day = "0"; break;
+                    case "火":
+                        day = "1"; break;
+                    case "水":
+                        day = "2"; break;
+                    case "木":
+                        day = "3"; break;
+                    case "金":
+                        day = "4"; break;
+                    case "土":
+                        day = "5"; break;
+                    case "日":
+                        day = "6"; break;
+                    default:
+                        day = "99"; //unknown
+                }
+                int time = Integer.valueOf(StringUtil.matcherSubString(tdData.get(7).text(),"[2468]+|10|12").replaceAll(",.*","")) / 2;
+
+                Cursor cursor = dbAdapter.searchDB("ClassroomDivide", null, where,
+                        new String[]{"%"+tdData.get(10).text().replaceAll("　.*","")+"%",day,String.valueOf(time)});
+
+                String place=getString(R.string.syllabus_place_not_found);
+                String message=getString(R.string.syllabus_place_not_found_message);
+
+                if(cursor.moveToFirst()) {
+                    if(cursor.getCount()==1){
+                        place = cursor.getString(cursor.getColumnIndex("place"));
+                        message = getString(R.string.syllabus_place_message);
+                    }
+                    else { //2つ以上
+                        do {
+                            if (cursor.getString(cursor.getColumnIndex("person")).matches(".*" + tdData.get(10).text().replaceAll("　", ".*") + ".*")) {
+                                place = cursor.getString(cursor.getColumnIndex("place"));
+                                message = getString(R.string.syllabus_place_message);
+                            }
+                        } while (cursor.moveToNext());
+                    }
+                }
+
+                cursor.close();
+                dbAdapter.closeDB();
+
+                sectionList.add(new SectionHeaderData(getResources().getString(R.string.syllabus_place), ""));
+                List<SectionRowData> sectionDatalist0 = new ArrayList<SectionRowData>();
+                sectionDatalist0.add(new SectionRowData( place, message,""));
+                rowList.add(sectionDatalist0);
 
                 CustomSectionListAdapter adapter = new CustomSectionListAdapter(parent_activity, sectionList, rowList);
                 listview.setAdapter(adapter);

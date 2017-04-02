@@ -1,6 +1,5 @@
 package com.example.ssd.shimaneuniversitybrowser;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -126,6 +125,8 @@ public class SyllabusFormActivity extends AppCompatActivity {
             form6.setAdapter(adapter4);
             adapter4.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             form6.setPromptId(R.string.syllabus_time);
+
+            dbAdapter.closeDB();
 
             Button Button1 = (Button) this.findViewById(R.id.button_search);
             Button Button2 = (Button) this.findViewById(R.id.button_clear);
