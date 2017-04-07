@@ -117,63 +117,84 @@ public class SyllabusViewActivity extends AppCompatActivity {
                 DBAdapter dbAdapter = new DBAdapter(parent_activity);
                 dbAdapter.openDB();
 
-                String where = "person like ? and ";
-                String where_value;
+                String where = "person like ? and " + CreateWhereTime(tdData.get(7).text());
 
-                String day;
-                where = where.concat("( weekday like ? and time like ? ) ");
-                switch (StringUtil.matcherSubString(tdData.get(7).text(),"[月火水木金土日]+")) {
-                    case "月":
-                        day = "0"; break;
-                    case "火":
-                        day = "1"; break;
-                    case "水":
-                        day = "2"; break;
-                    case "木":
-                        day = "3"; break;
-                    case "金":
-                        day = "4"; break;
-                    case "土":
-                        day = "5"; break;
-                    case "日":
-                        day = "6"; break;
-                    default:
-                        day = "99"; //unknown
-                }
-                int time = Integer.valueOf(StringUtil.matcherSubString(tdData.get(7).text(),"[2468]+|10|12").replaceAll(",.*","")) / 2;
+                Cursor cursor = dbAdapter.searchDB("ClassroomDivide", null, where, new String[]{"%"+tdData.get(10).text().replaceAll("　.*","")+"%"});
 
-                Cursor cursor = dbAdapter.searchDB("ClassroomDivide", null, where,
-                        new String[]{"%"+tdData.get(10).text().replaceAll("　.*","")+"%",day,String.valueOf(time)});
+                String place = getString(R.string.syllabus_place_not_found);
+                String message = getString(R.string.syllabus_place_not_found_message);
 
-                String place=getString(R.string.syllabus_place_not_found);
-                String message=getString(R.string.syllabus_place_not_found_message);
+                sectionList.add(new SectionHeaderData(getResources().getString(R.string.syllabus_place), ""));
+                List<SectionRowData> sectionDatalist0 = new ArrayList<SectionRowData>();
 
                 if(cursor.moveToFirst()) {
-                    if(cursor.getCount()==1){
+                    do {
                         place = cursor.getString(cursor.getColumnIndex("place"));
-                        message = getString(R.string.syllabus_place_message);
-                    }
-                    else { //2つ以上
-                        do {
-                            if (cursor.getString(cursor.getColumnIndex("person")).matches(".*" + tdData.get(10).text().replaceAll("　", ".*") + ".*")) {
-                                place = cursor.getString(cursor.getColumnIndex("place"));
-                                message = getString(R.string.syllabus_place_message);
-                            }
-                        } while (cursor.moveToNext());
-                    }
+                        message = (getResources().getStringArray(R.array.weekday))[Integer.valueOf(cursor.getString(cursor.getColumnIndex("weekday")))]
+                                + " " + (getResources().getStringArray(R.array.time_period))[Integer.valueOf(cursor.getString(cursor.getColumnIndex("time")))-1];
+                        if (cursor.getString(cursor.getColumnIndex("person")).matches(".*" + tdData.get(10).text().replaceAll("　", ".*") + ".*")) {
+                            sectionDatalist0.add(new SectionRowData(place, message, "")); //複数場所がある場合を考慮
+                        }
+                    } while (cursor.moveToNext());
                 }
+
+                if(sectionDatalist0.size() <= 0) { //複数候補から１つも該当しなかった場合または１つのみ該当した場合
+                    sectionDatalist0.add(new SectionRowData( place, message, ""));
+                }
+
+                rowList.add(sectionDatalist0);
 
                 cursor.close();
                 dbAdapter.closeDB();
 
-                sectionList.add(new SectionHeaderData(getResources().getString(R.string.syllabus_place), ""));
-                List<SectionRowData> sectionDatalist0 = new ArrayList<SectionRowData>();
-                sectionDatalist0.add(new SectionRowData( place, message,""));
-                rowList.add(sectionDatalist0);
-
                 CustomSectionListAdapter adapter = new CustomSectionListAdapter(parent_activity, sectionList, rowList);
                 listview.setAdapter(adapter);
             }
+        }
+
+        private String CreateWhereTime(String text){
+
+            String where = "";
+
+            String[] weekday_array = StringUtil.matcherSubString(text,"[月火水木金土日]+").split(",");
+            String[] time_array = StringUtil.matcherSubString(text,"\\(.{1,2}限,([2468]+|10|12)").replaceAll("\\(.{1,2}限,","").split(",");
+
+            for (int i = 0; i < weekday_array.length; i++) {
+
+                String day;
+
+                switch (weekday_array[i]) {
+                    case "月":
+                        day = "0";
+                        break;
+                    case "火":
+                        day = "1";
+                        break;
+                    case "水":
+                        day = "2";
+                        break;
+                    case "木":
+                        day = "3";
+                        break;
+                    case "金":
+                        day = "4";
+                        break;
+                    case "土":
+                        day = "5";
+                        break;
+                    case "日":
+                        day = "6";
+                        break;
+                    default:
+                        day = "99";
+                }
+
+                where = where.concat("( weekday = " + day + " and time = " + Integer.valueOf(time_array[i])/2 + " ) ");
+                if (i + 1 < weekday_array.length)
+                    where = where.concat("or ");
+            }
+
+            return " ( " + where + " ) ";
         }
 
         public class CustomSectionListAdapter extends BaseSectionAdapter<SectionHeaderData, SectionRowData> {

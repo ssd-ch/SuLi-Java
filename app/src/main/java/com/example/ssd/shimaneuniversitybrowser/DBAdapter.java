@@ -122,8 +122,7 @@ public class DBAdapter {
      * @return DBの検索したデータ
      */
     public Cursor searchDB(String table, String[] columns, String column, String[] name) {
-        if(name.length>=3&&table.equals("ClassroomDivide"))
-            Log.d("DEBUG",name[0]+" "+name[1]+" "+name[2]);
+        //Log.d("DEBUG",column.replaceAll("\\?",name[0]));
         return db.query( table, columns, column, name, null, null, "_id ASC");
     }
 
@@ -219,6 +218,10 @@ public class DBAdapter {
                             + "display TEXT, "
                             + "value TEXT, "
                             + "PRIMARY KEY( _id, form) );" );
+            db.execSQL(
+                    "CREATE TABLE RecodeHistory ("
+                            + "_id INTEGER PRIMARY KEY NOT NULL, "
+                            + "date INTEGER NOT NULL;" );
         }
 
         /**

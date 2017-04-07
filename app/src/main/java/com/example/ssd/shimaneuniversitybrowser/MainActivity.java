@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
+import android.support.v4.app.AppLaunchChecker;
 import android.support.v7.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
         Button NextButton1 = (Button) this.findViewById(R.id.button1);
         Button NextButton2 = (Button) this.findViewById(R.id.button2);
         Button NextButton3 = (Button) this.findViewById(R.id.button3);
+        Button NextButton4 = (Button) this.findViewById(R.id.button4);
 
         NextButton1.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -53,10 +55,26 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //データを取得し、データベースに登録を行う
-        HTMLPageReceiver receiver = new HTMLPageReceiver(this);
-        //非同期処理を行う
-        receiver.execute("");
+        NextButton4.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //データを取得し、データベースに登録を行う
+                HTMLPageReceiver receiver = new HTMLPageReceiver(MainActivity.this);
+                //非同期処理を行う
+                receiver.execute("");
+            }
+        });
+
+        if(!AppLaunchChecker.hasStartedFromLauncher(this)){
+
+            //データを取得し、データベースに登録を行う
+            HTMLPageReceiver receiver = new HTMLPageReceiver(MainActivity.this);
+            //非同期処理を行う
+            receiver.execute("");
+
+            //初回の起動をしたことを保存
+            AppLaunchChecker.onActivityCreate(this);
+        }
 
     }
 
@@ -67,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
         private Elements[] tableData = null;
         private DBAdapter dbAdapter;
 
-        public HTMLPageReceiver(Activity activity){
+        public HTMLPageReceiver(Activity activity) {
             parentActivity = activity;
             dbAdapter = new DBAdapter(activity);
         }
@@ -87,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public Void doInBackground(String... params) {
 
-            if(tableData == null) { //データが取得されていない
+            if (tableData == null) { //データが取得されていない
 
                 //読み込みページ一覧を取得
                 String BuildingUrl = "http://www.shimane-u.ac.jp/education/school_info/class_data/class_data01.html";
@@ -134,29 +152,29 @@ public class MainActivity extends AppCompatActivity {
                     Elements options3 = FormData.select("[name=yobi] option"); //曜日
                     Elements options4 = FormData.select("[name=jigen] option"); //時限
 
-                    String[] column2 = {"_id", "form","display","value"};
-                    String[][] value2 = new String[1+options1.size()+options2.size()+options3.size()+options4.size()][column2.length];
+                    String[] column2 = {"_id", "form", "display", "value"};
+                    String[][] value2 = new String[1 + options1.size() + options2.size() + options3.size() + options4.size()][column2.length];
                     int value2_cnt = 0;
 
                     value2[value2_cnt++] = new String[]{"0", "nendo", year, year};
 
                     for (int k = 0; k < options1.size(); k++)
-                        value2[value2_cnt++] = new String[]{String.valueOf(k),"j_s_cd",options1.get(k).text(),options1.get(k).attr("value")};
+                        value2[value2_cnt++] = new String[]{String.valueOf(k), "j_s_cd", options1.get(k).text(), options1.get(k).attr("value")};
 
                     for (int k = 0; k < options2.size(); k++)
-                        value2[value2_cnt++] = new String[]{String.valueOf(k),"kamokud_cd",options2.get(k).text(),options2.get(k).attr("value")};
+                        value2[value2_cnt++] = new String[]{String.valueOf(k), "kamokud_cd", options2.get(k).text(), options2.get(k).attr("value")};
 
                     for (int k = 0; k < options3.size(); k++)
-                        value2[value2_cnt++] = new String[]{String.valueOf(k),"yobi",options3.get(k).text(),options3.get(k).attr("value")};
+                        value2[value2_cnt++] = new String[]{String.valueOf(k), "yobi", options3.get(k).text(), options3.get(k).attr("value")};
 
                     for (int k = 0; k < options4.size(); k++)
-                        value2[value2_cnt++] = new String[]{String.valueOf(k),"jigen",options4.get(k).text(),options4.get(k).attr("value")};
+                        value2[value2_cnt++] = new String[]{String.valueOf(k), "jigen", options4.get(k).text(), options4.get(k).attr("value")};
 
                     dbAdapter.saveDB("SyllabusForm", column2, value2);
 
                 } catch (Exception e) {
                     tableData = null;
-                }finally {
+                } finally {
                     dbAdapter.closeDB();
                 }
             }
@@ -188,15 +206,15 @@ public class MainActivity extends AppCompatActivity {
 
                     int placeCount = 0;
                     int otherCount = 0;
-                    for (Elements elements : tableData){
+                    for (Elements elements : tableData) {
                         if (elements != null) {
                             //本データ
                             placeCount += elements.get(2).select("td").size() - 2;
                             //その他のデータ(下にある小さい表)
-                            if(elements.size() > 27){
-                                for (int i = 27; i < elements.size(); i++){
-                                    String[] tdText = {elements.get(i).select("td").get(0).text(),elements.get(i).select("td").get(1).text()};
-                                    if(!(tdText[0].equals(String.valueOf('\u00A0'))&&tdText[1].equals(String.valueOf('\u00A0')))){
+                            if (elements.size() > 27) {
+                                for (int i = 27; i < elements.size(); i++) {
+                                    String[] tdText = {elements.get(i).select("td").get(0).text(), elements.get(i).select("td").get(1).text()};
+                                    if (!(tdText[0].equals(String.valueOf('\u00A0')) && tdText[1].equals(String.valueOf('\u00A0')))) {
                                         otherCount++;
                                     }
                                 }
@@ -204,11 +222,11 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
 
-                    String[] column = {"_id","building_id","place","weekday","time","cell_text","cell_color","classname","person","department","class_code"};
-                    String[][] value = new String[placeCount*25+otherCount][];
+                    String[] column = {"_id", "building_id", "place", "weekday", "time", "cell_text", "cell_color", "classname", "person", "department", "class_code"};
+                    String[][] value = new String[placeCount * 25 + otherCount][];
                     int value_count = 0;
 
-                    for(int d = 0; d < 5; d++) { //月から金のループ
+                    for (int d = 0; d < 5; d++) { //月から金のループ
                         int point = d * 5 + 2; //trタグの位置
                         for (int i = 0; i < 5; i++) { //1から5コマのループ
 
@@ -246,16 +264,15 @@ public class MainActivity extends AppCompatActivity {
                                             int m = style.indexOf("#");
                                             if (m >= 0) {
                                                 color = style.substring(m, m + 7);
-                                                L_Info = new String[]{"","","",""};
-                                            }
-                                            else{
+                                                L_Info = new String[]{"", "", "", ""};
+                                            } else {
                                                 L_Info = ExtractionLecture(text);
                                             }
                                         }
-                                        String id = ""+(building_id<10?"0"+building_id:building_id)+(pn<10?"0"+pn:pn)+d+i;
+                                        String id = "" + (building_id < 10 ? "0" + building_id : building_id) + (pn < 10 ? "0" + pn : pn) + d + i;
 
                                         //DBへの登録
-                                        value[value_count++] = new String[]{id,String.valueOf(building_id),places[pn],String.valueOf(d),String.valueOf(i+1),text,color,L_Info[0],L_Info[1],L_Info[2],L_Info[3]};
+                                        value[value_count++] = new String[]{id, String.valueOf(building_id), places[pn], String.valueOf(d), String.valueOf(i + 1), text, color, L_Info[0], L_Info[1], L_Info[2], L_Info[3]};
                                     }
                                 }
                                 building_id++;
@@ -264,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     for (int building_id = 0; building_id < tableData.length; building_id++) { //建物のループ
-                        if(tableData[building_id] != null) {
+                        if (tableData[building_id] != null) {
                             if (tableData[building_id].size() > 27) {
                                 String place_text = new String();
                                 String day_cache = new String();
@@ -276,37 +293,44 @@ public class MainActivity extends AppCompatActivity {
                                             tableData[building_id].get(i).select("td").get(1).text(),
                                             tableData[building_id].get(i).select("td").get(2).text()};
                                     if (tdText[0].equals(String.valueOf('\u00A0')) && tdText[1].equals(String.valueOf('\u00A0'))) {
-                                        place_text = StringUtil.fullWidthNumberToHalfWidthNumber(tdText[2].replaceAll("　",""));
+                                        place_text = StringUtil.fullWidthNumberToHalfWidthNumber(tdText[2].replaceAll("　", ""));
                                     } else {
-                                        tdText[0] = tdText[0].replaceAll("[ 　"+String.valueOf('\u00A0')+"]", "");//全角半角&nbspスペースの排除
-                                        tdText[1] = tdText[1].replaceAll("[ 　"+String.valueOf('\u00A0')+"]", "");//全角半角&nbspスペースの排除
+                                        tdText[0] = tdText[0].replaceAll("[ 　" + String.valueOf('\u00A0') + "]", "");//全角半角&nbspスペースの排除
+                                        tdText[1] = tdText[1].replaceAll("[ 　" + String.valueOf('\u00A0') + "]", "");//全角半角&nbspスペースの排除
                                         if (tdText[0].equals("")) tdText[0] = day_cache;
                                         day_cache = tdText[0];
                                         int day;
                                         switch (tdText[0]) {
                                             case "月":
-                                                day = 0; break;
+                                                day = 0;
+                                                break;
                                             case "火":
-                                                day = 1; break;
+                                                day = 1;
+                                                break;
                                             case "水":
-                                                day = 2; break;
+                                                day = 2;
+                                                break;
                                             case "木":
-                                                day = 3; break;
+                                                day = 3;
+                                                break;
                                             case "金":
-                                                day = 4; break;
+                                                day = 4;
+                                                break;
                                             case "土":
-                                                day = 5; break;
+                                                day = 5;
+                                                break;
                                             case "日":
-                                                day = 6; break;
+                                                day = 6;
+                                                break;
                                             default:
                                                 day = 99; //unknown
                                         }
-                                        int time = Integer.valueOf(tdText[1].substring(tdText[1].indexOf(".")+1)) / 2;//コマを格納
+                                        int time = Integer.valueOf(tdText[1].substring(tdText[1].indexOf(".") + 1)) / 2;//コマを格納
                                         String id = "" + (building_id < 10 ? "0" + building_id : building_id) + (pn < 10 ? "0" + pn : pn) + day + time;
                                         pn++;
 
                                         String[] L_Info = ExtractionLecture(tdText[2]);
-                                        value[value_count++] = new String[]{id,String.valueOf(building_id),place_text,String.valueOf(day),String.valueOf(time),tdText[2],"#000000",L_Info[0],L_Info[1],L_Info[2],L_Info[3]};
+                                        value[value_count++] = new String[]{id, String.valueOf(building_id), place_text, String.valueOf(day), String.valueOf(time), tdText[2], "#000000", L_Info[0], L_Info[1], L_Info[2], L_Info[3]};
                                     }
                                 }
                             }
@@ -326,7 +350,7 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             })
                             .show();
-                }finally {
+                } finally {
                     //DBを閉じる
                     dbAdapter.closeDB();
                 }
@@ -347,33 +371,33 @@ public class MainActivity extends AppCompatActivity {
      * @param text セルのテキスト
      * @return result String[4] (授業名、担当者名、担当者の所属、時間割コード)
      */
-    private String[] ExtractionLecture(String text){
+    private String[] ExtractionLecture(String text) {
 
-        String[] result = {"","","",""};
+        String[] result = {"", "", "", ""};
 
         final String d_code = "ＬＳＥＨＭＳＡＦＣ○*";
 
-        text = text.replaceAll("、"," ");
+        text = text.replaceAll("、", " ");
 
         //授業名
-        if(text.matches(".*『.*』.*")){
-            result[0] = StringUtil.matcherSubString(text,"『.*』").replaceAll("[『』]", "");
+        if (text.matches(".*『.*』.*")) {
+            result[0] = StringUtil.matcherSubString(text, "『.*』").replaceAll("[『』]", "");
             text = text.replaceAll("『.*』", "");
         }
         //時間割コード
-        if(text.matches(".*[A-Z0-9]{6}.*")){
-            result[3] = StringUtil.matcherSubString(text,"[A-Z0-9]{6,}");
+        if (text.matches(".*[A-Z0-9]{6}.*")) {
+            result[3] = StringUtil.matcherSubString(text, "[A-Z0-9]{6,}");
             text = text.replaceAll("[A-Z0-9/]{6,}", "");
         }
         //担当者情報
-        if(text.matches(".*["+d_code+"].*")){
-            String t = StringUtil.matcherSubString(text,"["+d_code+"]{1,2}[^"+d_code+"]*");
-            result[2] = StringUtil.matcherSubString(t,"["+d_code+"]{1,2}");
-            result[1] = t.replaceAll("["+d_code+"]", "");
+        if (text.matches(".*[" + d_code + "].*")) {
+            String t = StringUtil.matcherSubString(text, "[" + d_code + "]{1,2}[^" + d_code + "]*");
+            result[2] = StringUtil.matcherSubString(t, "[" + d_code + "]{1,2}");
+            result[1] = t.replaceAll("[" + d_code + "]", "");
         }
 
-        for(int i = 0; i < result.length; i++){
-            result[i] = result[i].replaceAll("[　 ]","");
+        for (int i = 0; i < result.length; i++) {
+            result[i] = result[i].replaceAll("[　 ]", "");
         }
 
         //Log.d("DEBUG","授業名:"+result[0]+" 時間割コード:"+result[3]+" 担当者名:"+result[1]+" 担当者所属:"+result[2]);

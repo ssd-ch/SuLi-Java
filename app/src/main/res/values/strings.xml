@@ -24,6 +24,7 @@
     <string name="home_bt1">シラバス</string>
     <string name="home_bt2">教室配当表</string>
     <string name="home_bt3">休講情報</string>
+    <string name="home_bt4">データ更新</string>
 
     <!--シラバス検索のフォームの項目名-->
     <string name="syllabus_department">学部</string>
@@ -52,7 +53,7 @@
     <string name="syllabus_teacher_list">担当教員一覧</string>
 
     <!--シラバス閲覧の講義場所のテキスト-->
-    <string name="syllabus_place_message">※自動探索による値なので、正しい場所であるとは限りません</string>
+    <string name="syllabus_place_message">※正しい場所であるとは限りません</string>
     <string name="syllabus_place_not_found">特定できませんでした</string>
     <string name="syllabus_place_not_found_message">教室配当表を確認してください</string>
 
@@ -112,6 +113,18 @@
         <item>16:15〜17:45</item>
         <item>18:00〜19:30</item>
         <item>19:45〜21:15</item>
+    </string-array>
+
+    <!--曜日の配列-->
+    <string-array name="weekday">
+        <item>月曜日</item>
+        <item>火曜日</item>
+        <item>水曜日</item>
+        <item>木曜日</item>
+        <item>金曜日</item>
+        <item>土曜日</item>
+        <item>日曜日</item>
+        <item>不明</item>
     </string-array>
 
     <!--メッセージ-->
