@@ -117,9 +117,10 @@ public class SyllabusViewActivity extends AppCompatActivity {
                 DBAdapter dbAdapter = new DBAdapter(parent_activity);
                 dbAdapter.openDB();
 
-                String where = "person like ? and " + CreateWhereTime(tdData.get(7).text());
+                String where = "( classname like ? or person like ? ) and " + CreateWhereTime(tdData.get(7).text());
 
-                Cursor cursor = dbAdapter.searchDB("ClassroomDivide", null, where, new String[]{"%"+tdData.get(10).text().replaceAll("　.*","")+"%"});
+                Cursor cursor = dbAdapter.searchDB("ClassroomDivide", null, where, new String[]
+                        {"%"+tdData.get(4).text()+"%" , "%"+tdData.get(10).text().replaceAll("　.*","")+"%"});
 
                 String place = getString(R.string.syllabus_place_not_found);
                 String message = getString(R.string.syllabus_place_not_found_message);
@@ -157,7 +158,7 @@ public class SyllabusViewActivity extends AppCompatActivity {
             String where = "";
 
             String[] weekday_array = StringUtil.matcherSubString(text,"[月火水木金土日]+").split(",");
-            String[] time_array = StringUtil.matcherSubString(text,"\\(.{1,2}限,([2468]+|10|12)").replaceAll("\\(.{1,2}限,","").split(",");
+            String[] time_array = StringUtil.matcherSubString(text,"\\(.{1,2}限,([2468]+|10|12|14)").replaceAll("\\(.{1,2}限,","").split(",");
 
             for (int i = 0; i < weekday_array.length; i++) {
 
@@ -188,6 +189,9 @@ public class SyllabusViewActivity extends AppCompatActivity {
                     default:
                         day = "99";
                 }
+
+                if(!time_array[i].matches("[2468]|10|12|14"))
+                    time_array[i] = "0";
 
                 where = where.concat("( weekday = " + day + " and time = " + Integer.valueOf(time_array[i])/2 + " ) ");
                 if (i + 1 < weekday_array.length)

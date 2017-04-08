@@ -221,7 +221,7 @@ public class DBAdapter {
             db.execSQL(
                     "CREATE TABLE RecodeHistory ("
                             + "_id INTEGER PRIMARY KEY NOT NULL, "
-                            + "date INTEGER NOT NULL;" );
+                            + "date INTEGER NOT NULL);" );
         }
 
         /**

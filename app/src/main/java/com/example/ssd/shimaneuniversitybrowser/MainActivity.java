@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
             if (tableData == null) { //データが取得されていない
 
                 //読み込みページ一覧を取得
-                String BuildingUrl = "http://www.shimane-u.ac.jp/education/school_info/class_data/class_data01.html";
+                String BuildingUrl = "http://www.shimane-u.ac.jp/education/school_info/class_data/";
                 String SyllabusFormUrl = "http://gakumuweb1.shimane-u.ac.jp/shinwa/SYOutsideReferSearchInput";
 
                 //DBを開く
@@ -121,20 +121,17 @@ public class MainActivity extends AppCompatActivity {
 
                     //教室配当表のダウンロードと建物の登録
                     Document doc = Jsoup.connect(BuildingUrl).get();
-                    Elements urlList = doc.select(".body li a");
-                    tableData = new Elements[urlList.size()];
-                    int i = 0;
+                    Elements urlList = doc.select("#pageList li a"); //そのまま:tag #:id .:class
+                    tableData = new Elements[urlList.size()-2];
                     String[] column = {"_id", "building_name"};
-                    String[][] value = new String[urlList.size()][column.length];
-                    for (Element element : urlList) {
+                    String[][] value = new String[urlList.size()-2][column.length];
+                    for (int i = 0; i < urlList.size()-2; i++) {
                         try {
                             value[i][0] = String.valueOf(i);
-                            value[i][1] = element.text().replace("教室配当表_", "").replaceAll("_", " ");
-                            tableData[i] = Jsoup.connect(element.attr("abs:href")).get().select(".body tr");
+                            value[i][1] = urlList.get(i+1).text().replace("教室配当表_", "").replaceAll("_", " ");
+                            tableData[i] = Jsoup.connect(urlList.get(i+1).attr("abs:href")).get().select(".body tr");
                         } catch (Exception e) {
                             tableData[i] = null;
-                        } finally {
-                            i++;
                         }
                     }
                     dbAdapter.saveDB("Building", column, value);
