@@ -95,6 +95,17 @@
         <item>9.10限</item>
     </string-array>
 
+    <!--休講情報の項目-->
+    <string-array name="cancel_info_section">
+        <item>授業名</item>
+        <item>日付・時限</item>
+        <item>分類</item>
+        <item>グループ</item>
+        <item>講師名</item>
+        <item>教室</item>
+        <item>備考</item>
+    </string-array>
+
     <!--講義の時間(１コマ〜５コマ)-->
     <string-array name="time_period">
         <item>1.2限 (1コマ)</item>

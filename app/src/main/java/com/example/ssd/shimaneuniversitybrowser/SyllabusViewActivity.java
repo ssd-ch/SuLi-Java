@@ -201,7 +201,7 @@ public class SyllabusViewActivity extends AppCompatActivity {
             return " ( " + where + " ) ";
         }
 
-        public class CustomSectionListAdapter extends BaseSectionAdapter<SectionHeaderData, SectionRowData> {
+        private class CustomSectionListAdapter extends BaseSectionAdapter<SectionHeaderData, SectionRowData> {
 
             public CustomSectionListAdapter(Context context, List<SectionHeaderData> sectionList, List<List<SectionRowData>> rowList) {
                 super(context, sectionList, rowList);

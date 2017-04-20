@@ -14,7 +14,7 @@ import android.util.Log;
 public class DBAdapter {
 
     private final static String DB_NAME = "shimane_university.db";      // DBファイル名
-    private final static int DB_VERSION = 2;                // DBのバージョン
+    private final static int DB_VERSION = 7;                // DBのバージョン
 
     private SQLiteDatabase db = null;           // SQLiteDatabase
     private DBHelper dbHelper = null;           // DBHelper
@@ -220,8 +220,19 @@ public class DBAdapter {
                             + "PRIMARY KEY( _id, form) );" );
             db.execSQL(
                     "CREATE TABLE RecodeHistory ("
-                            + "_id INTEGER PRIMARY KEY NOT NULL, "
+                            + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                             + "date INTEGER NOT NULL);" );
+            db.execSQL(
+                    "CREATE TABLE CancelInfo ("
+                            + "_id INTEGER PRIMARY KEY, "
+                            + "date TEXT NOT NULL, "
+                            + "time TEXT NOT NULL, "
+                            + "classification TEXT NOT NULL,"
+                            + "department TEXT NOT NULL, "
+                            + "classname TEXT NOT NULL, "
+                            + "person TEXT NOT NULL,"
+                            + "place TEXT, "
+                            + "note TEXT );" );
         }
 
         /**
@@ -237,6 +248,8 @@ public class DBAdapter {
             db.execSQL("DROP TABLE IF EXISTS ClassroomDivide");
             db.execSQL("DROP TABLE IF EXISTS Building");
             db.execSQL("DROP TABLE IF EXISTS SyllabusForm");
+            db.execSQL("DROP TABLE IF EXISTS RecodeHistory");
+            db.execSQL("DROP TABLE IF EXISTS CancelInfo");
             // テーブル生成
             onCreate(db);
         }
