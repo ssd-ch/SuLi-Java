@@ -1,4 +1,4 @@
-package com.example.ssd.shimaneuniversitybrowser;
+package cf.ssdb.suli;
 
 public class SectionHeaderData {
 

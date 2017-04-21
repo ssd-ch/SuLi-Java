@@ -1,4 +1,4 @@
-package com.example.ssd.shimaneuniversitybrowser;
+package cf.ssdb.suli;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

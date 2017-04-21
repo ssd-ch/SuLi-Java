@@ -4,7 +4,7 @@ android {
     compileSdkVersion 25
     buildToolsVersion '25.0.0'
     defaultConfig {
-        applicationId "com.example.ssd.shimaneuniversitybrowser"
+        applicationId "cf.ssdb.suli"
         minSdkVersion 19
         targetSdkVersion 23
         versionCode 1

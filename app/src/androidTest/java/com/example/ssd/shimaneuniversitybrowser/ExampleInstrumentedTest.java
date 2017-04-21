@@ -1,4 +1,4 @@
-package com.example.ssd.shimaneuniversitybrowser;
+package cf.ssdb.suli;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

@@ -1,4 +1,4 @@
-package com.example.ssd.shimaneuniversitybrowser;
+package cf.ssdb.suli;
 
 import android.app.Activity;
 import android.app.AlertDialog;

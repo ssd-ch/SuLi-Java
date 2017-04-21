@@ -1,4 +1,4 @@
-package com.example.ssd.shimaneuniversitybrowser;
+package cf.ssdb.suli;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -6,11 +6,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Color;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
+import android.support.design.widget.TabLayout;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,14 +22,17 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AllPlacesListActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener {
+public class ClassroomListActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_all_places_list);
+        setContentView(R.layout.activity_classroom_lists);
 
-        setTitle(R.string.title_all_places_list);
+        Intent intent = getIntent();
+        String building_name = intent.getStringExtra("building_name");
+
+        setTitle(building_name);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
@@ -102,6 +106,9 @@ public class AllPlacesListActivity extends AppCompatActivity implements ViewPage
             //データを書き込むビューを取得
             View view = inflater.inflate(R.layout.classroom_lists_content, container, false);
 
+            Intent intent = parentActivity.getIntent();
+            String id = intent.getStringExtra("id");
+
             ListView listview = (ListView) view.findViewById(R.id.listView);
 
             int page = getArguments().getInt("page", 0);
@@ -117,10 +124,14 @@ public class AllPlacesListActivity extends AppCompatActivity implements ViewPage
                 String[] times = getResources().getStringArray(R.array.time_period); //コマ
                 String[] times_m = getResources().getStringArray(R.array.time_period_m); //時間（時、分）
 
-                for (int i = 0; i < times.length; i++) { //1から5コマのループ
+                Boolean DataExists = false; //データが存在するかどうかのフラグ　ない場合はアクティビティ終了
+
+                for (int i = 0; i < times.length; i++) { //1から7コマのループ
                     Cursor cursor = dbAdapter.searchDB("ClassroomDivide", null,
-                            "weekday = ? and time = ?", new String[]{String.valueOf(page),String.valueOf(i+1)});
+                            "building_id = ? and weekday = ? and time = ?", new String[]{id,String.valueOf(page),String.valueOf(i+1)});
                     if(cursor.moveToFirst()) {
+                        DataExists = true;
+
                         int col_place = cursor.getColumnIndex("place");
                         int col_text = cursor.getColumnIndex("cell_text");
                         int col_color = cursor.getColumnIndex("cell_color");
@@ -133,6 +144,19 @@ public class AllPlacesListActivity extends AppCompatActivity implements ViewPage
                         rowList.add(sectionDataList);
                     }
                     cursor.close();
+                }
+
+                if(!DataExists){ //データが存在しなかった場合
+                    new AlertDialog.Builder(parentActivity)
+                            .setTitle(intent.getStringExtra("building_name"))
+                            .setMessage(R.string.dialog_message_search_result_notExists)
+                            .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //okボタンが押された時の処理
+                                    parentActivity.finish();
+                                }
+                            })
+                            .show();
                 }
 
                 CustomSectionListAdapter adapter = new CustomSectionListAdapter( parentActivity, sectionList, rowList);
@@ -156,7 +180,6 @@ public class AllPlacesListActivity extends AppCompatActivity implements ViewPage
 
             return view;
         }
-
 
         public class CustomSectionListAdapter extends BaseSectionAdapter<SectionHeaderData, SectionRowData> {
 
@@ -214,4 +237,3 @@ public class AllPlacesListActivity extends AppCompatActivity implements ViewPage
     }
 
 }
-

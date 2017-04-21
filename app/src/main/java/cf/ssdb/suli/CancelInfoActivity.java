@@ -1,4 +1,4 @@
-package com.example.ssd.shimaneuniversitybrowser;
+package cf.ssdb.suli;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;

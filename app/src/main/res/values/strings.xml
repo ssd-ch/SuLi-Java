@@ -1,6 +1,6 @@
 <resources>
     <!--アプリ名-->
-    <string name="app_name">島根大学講義情報</string>
+    <string name="app_name">島根大学\n講義情報</string>
 
     <!--OKボタンのテキスト-->
     <string name="button_ok">OK</string>
