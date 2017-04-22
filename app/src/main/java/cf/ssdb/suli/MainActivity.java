@@ -205,14 +205,21 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
+        /**
+         * 教室配当表からデータを抽出する
+         *
+         * @param tableData 建物別の教室配当表のhtmlデータ
+         * @return value String[][] 日、時間、場所ごとに分けた教室情報
+         * @throws Exception
+         */
         private String[][] CreatePlaceData(Elements[] tableData) throws Exception {
 
-            int placeCount = 0;
+            int baseCount = 0;
             int otherCount = 0;
             for (Elements elements : tableData) {
                 if (elements != null) {
                     //本データ
-                    placeCount += elements.get(2).select("td").size() - 2;
+                    baseCount += elements.get(2).select("td").size() - 2;
                     //その他のデータ(下にある小さい表)
                     if (elements.size() > 27) {
                         for (int i = 27; i < elements.size(); i++) {
@@ -225,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            String[][] value = new String[placeCount * 25 + otherCount][];
+            String[][] value = new String[baseCount * 25 + otherCount][];
             int value_count = 0;
 
             for (int d = 0; d < 5; d++) { //月から金のループ
@@ -300,32 +307,7 @@ public class MainActivity extends AppCompatActivity {
                                 tdText[1] = tdText[1].replaceAll("[ 　" + String.valueOf('\u00A0') + "]", "");//全角半角&nbspスペースの排除
                                 if (tdText[0].equals("")) tdText[0] = day_cache;
                                 day_cache = tdText[0];
-                                int day;
-                                switch (tdText[0]) {
-                                    case "月":
-                                        day = 0;
-                                        break;
-                                    case "火":
-                                        day = 1;
-                                        break;
-                                    case "水":
-                                        day = 2;
-                                        break;
-                                    case "木":
-                                        day = 3;
-                                        break;
-                                    case "金":
-                                        day = 4;
-                                        break;
-                                    case "土":
-                                        day = 5;
-                                        break;
-                                    case "日":
-                                        day = 6;
-                                        break;
-                                    default:
-                                        day = 99; //unknown
-                                }
+                                int day = "月火水木金土日".indexOf(tdText[0]);
                                 int time = Integer.valueOf(tdText[1].substring(tdText[1].indexOf(".") + 1)) / 2;//コマを格納
                                 String id = "" + (building_id < 10 ? "0" + building_id : building_id) + (pn < 10 ? "0" + pn : pn) + day + time;
                                 pn++;

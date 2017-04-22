@@ -183,7 +183,7 @@ public class SyllabusViewActivity extends AppCompatActivity {
                         day = "6";
                         break;
                     default:
-                        day = "99";
+                        day = "-1";
                 }
 
                 if(!time_array[i].matches("[2468]|10|12|14"))
