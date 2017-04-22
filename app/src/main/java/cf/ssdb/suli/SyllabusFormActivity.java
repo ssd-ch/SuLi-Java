@@ -141,7 +141,7 @@ public class SyllabusFormActivity extends AppCompatActivity {
                     Spinner spinner7 = (Spinner) SyllabusFormActivity.this.findViewById(R.id.form5);
                     Spinner spinner8 = (Spinner) SyllabusFormActivity.this.findViewById(R.id.form6);
 
-                    Intent intent = new Intent(SyllabusFormActivity.this, SyllabusSearchResultActivity.class);
+                    Intent intent = new Intent(SyllabusFormActivity.this, SyllabusResultActivity.class);
                     intent.putExtra("data0", year);
                     intent.putExtra("data1", values1[spinner1.getSelectedItemPosition()]);
                     intent.putExtra("data2", values2[spinner2.getSelectedItemPosition()]);

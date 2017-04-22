@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SyllabusSearchResultActivity extends AppCompatActivity {
+public class SyllabusResultActivity extends AppCompatActivity {
 
     private ListView listview;
     private View footer;
@@ -50,18 +50,18 @@ public class SyllabusSearchResultActivity extends AppCompatActivity {
         road_limiter = false;
         s_cnt = 0;
 
-        listview = (ListView)findViewById(R.id.listView);
+        listview = (ListView) findViewById(R.id.listView);
         footer = getLayoutInflater().inflate(R.layout.list_footer_roading, null);
 
         Intent intent = getIntent();
         searchData = new String[10];
-        for(int i = 0; i< searchData.length; i++){
-            searchData[i] = intent.getStringExtra("data"+i);
+        for (int i = 0; i < searchData.length; i++) {
+            searchData[i] = intent.getStringExtra("data" + i);
         }
 
         String[] from = {"class_name", "teacher"};
         int[] to = {android.R.id.text1, android.R.id.text2};
-        SimpleAdapter adapter = new SimpleAdapter(SyllabusSearchResultActivity.this, List, android.R.layout.simple_list_item_2, from, to);
+        SimpleAdapter adapter = new SimpleAdapter(SyllabusResultActivity.this, List, android.R.layout.simple_list_item_2, from, to);
 
         listview.setAdapter(adapter);
         listview.addFooterView(footer);
@@ -77,7 +77,7 @@ public class SyllabusSearchResultActivity extends AppCompatActivity {
                 // 最後までスクロールされたかどうかの判定
                 if (totalItemCount == firstVisibleItem + visibleItemCount) {
                     // ここに次の数件を取得して表示する処理を書けばいい
-                    if((receiver!=null && receiver.getStatus()==AsyncTask.Status.RUNNING) || road_limiter)
+                    if ((receiver != null && receiver.getStatus() == AsyncTask.Status.RUNNING) || road_limiter)
                         return; //スキップ処理
                     //新しいタスクを生成
                     receiver = new SyllabusSearchListReceiver();
@@ -95,7 +95,7 @@ public class SyllabusSearchResultActivity extends AppCompatActivity {
             Map<String, String> item = (Map<String, String>) parent.getItemAtPosition(position);
             String url = item.get("url");
 
-            Intent intent = new Intent(SyllabusSearchResultActivity.this, SyllabusViewActivity.class);
+            Intent intent = new Intent(SyllabusResultActivity.this, SyllabusViewActivity.class);
             intent.putExtra("url", url);
             startActivity(intent);
         }
@@ -109,10 +109,10 @@ public class SyllabusSearchResultActivity extends AppCompatActivity {
         @Override
         public Elements doInBackground(String... params) {
 
-            String acceptURL ;
+            String acceptURL;
             final String charset = "Shift_JIS";
 
-            try{
+            try {
                 acceptURL = params[0]
                         + "?nendo=" + searchData[0]
                         + "&j_s_cd=" + searchData[1]
@@ -140,15 +140,15 @@ public class SyllabusSearchResultActivity extends AppCompatActivity {
                 }
                 br.close();
 
-                Document document = Jsoup.parse(sb.toString(),params[0]);
+                Document document = Jsoup.parse(sb.toString(), params[0]);
                 Elements elements = document.select(params[1]);
-                if(elements.size() >= 1) {
+                if (elements.size() >= 1) {
                     String cnt_text = document.select("p").get(0).text();
                     search_cnt = Integer.parseInt(cnt_text.substring(cnt_text.indexOf("｜　全") + 3, cnt_text.indexOf("件　｜")));
                 }
                 return elements;
 
-            }catch (Exception e){
+            } catch (Exception e) {
 
                 return null;
             }
@@ -157,37 +157,36 @@ public class SyllabusSearchResultActivity extends AppCompatActivity {
 
         public void onPostExecute(Elements result) {
 
-            if(result==null){
+            if (result == null) {
                 listview.removeFooterView(footer); //フッターの削除
-                new AlertDialog.Builder(SyllabusSearchResultActivity.this)
+                new AlertDialog.Builder(SyllabusResultActivity.this)
                         .setTitle(R.string.error_title_data_response)
                         .setMessage(R.string.error_message_response_refuse)
-                        .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener(){
+                        .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 //okボタンが押された時の処理
-                                SyllabusSearchResultActivity.this.finish();
+                                SyllabusResultActivity.this.finish();
                             }
                         })
                         .show();
-            }
-            else if(result.size()<1) {
+            } else if (result.size() < 1) {
                 listview.removeFooterView(footer); //フッターの削除
-                new AlertDialog.Builder(SyllabusSearchResultActivity.this)
+                new AlertDialog.Builder(SyllabusResultActivity.this)
                         .setTitle(R.string.dialog_title_search_result)
                         .setMessage(R.string.dialog_message_search_result_syllabus)
-                        .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener(){
+                        .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 //okボタンが押された時の処理
-                                SyllabusSearchResultActivity.this.finish();
+                                SyllabusResultActivity.this.finish();
                             }
                         })
                         .show();
-            }else {
+            } else {
 
-                SyllabusSearchResultActivity.this.setTitle(
+                SyllabusResultActivity.this.setTitle(
                         getResources().getString(R.string.title_syllabus_search_result) + " "
-                                +search_cnt //検索結果件数の数字
-                                +getResources().getString(R.string.results) //単位（件)
+                                + search_cnt //検索結果件数の数字
+                                + getResources().getString(R.string.results) //単位（件)
                 );
 
                 try {
@@ -206,21 +205,21 @@ public class SyllabusSearchResultActivity extends AppCompatActivity {
 
                     listview.invalidateViews(); //再描画
 
-                    if(s_cnt >= search_cnt){
+                    if (s_cnt >= search_cnt) {
 
                         road_limiter = true; //次回からはこれ以上読み込まないように設定
                         listview.removeFooterView(footer); //フッターの削除
                     }
 
 
-                }catch (Exception e){
-                    new AlertDialog.Builder(SyllabusSearchResultActivity.this)
+                } catch (Exception e) {
+                    new AlertDialog.Builder(SyllabusResultActivity.this)
                             .setTitle(R.string.error_title_data_response)
                             .setMessage(R.string.error_message_data_invalid)
-                            .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener(){
+                            .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
                                     //okボタンが押された時の処理
-                                    SyllabusSearchResultActivity.this.finish();
+                                    SyllabusResultActivity.this.finish();
                                 }
                             })
                             .show();
@@ -228,6 +227,5 @@ public class SyllabusSearchResultActivity extends AppCompatActivity {
 
             }
         }
-
     }
 }
