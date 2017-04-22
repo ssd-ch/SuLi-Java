@@ -399,7 +399,7 @@ public class MainActivity extends AppCompatActivity {
          */
         private String[][] CreateCancelInfo(String url) throws IOException {
 
-            ArrayList<Element> data = new ArrayList<Element>();
+            ArrayList<Element> data = new ArrayList();
 
             int page_num = 1;
             boolean flg = true;
